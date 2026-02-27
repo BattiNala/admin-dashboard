@@ -16,7 +16,7 @@ export default function HighlightCard({
 
   return (
     <div
-      className={`bg-gradient-to-r ${gradientMap[color]} rounded-2xl p-6 shadow-lg text-white`}
+      className={`bg-linear-to-r ${gradientMap[color]} rounded-2xl p-6 shadow-lg text-white`}
     >
       <div className="flex items-center gap-4 mb-4">
         <Icon className="w-10 h-10" />
