@@ -47,37 +47,6 @@ const summaryStats = {
   mostActiveMonth: "Feb 2026",
 };
 
-// src/pages/ResponseAnalyticsPage.jsx
-
-// ... all your imports, mock data, summaryStats remain the same ...
-
-// ONLY ONE version of the label function (this is the fixed one)
-const renderCustomizedLabel = (props) => {
-  const { cx, cy, midAngle, innerRadius, outerRadius, percent } = props;
-
-  // Skip very small slices to prevent overlap / invisible labels
-  if (percent < 0.05) return null;
-
-  const RADIAN = Math.PI / 180;
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-  return (
-    <text
-      x={x}
-      y={y}
-      fill="white"
-      textAnchor={x > cx ? "start" : "end"} // better alignment left/right
-      dominantBaseline="central"
-      fontSize={12}
-      fontWeight="bold"
-    >
-      {`${(percent * 100).toFixed(0)}%`}
-    </text>
-  );
-};
-
 export default function ResponseAnalyticsPage({ user, onLogout }) {
   return (
     <MainLayout user={user} onLogout={onLogout}>
@@ -134,7 +103,7 @@ export default function ResponseAnalyticsPage({ user, onLogout }) {
             <h3 className="text-lg font-semibold text-gray-900 mb-6">
               Monthly Resolution Trends
             </h3>
-            <div className="h-[340px]">
+            <div className="h-300px sm:h-340px">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={monthlyTrends}
@@ -188,7 +157,7 @@ export default function ResponseAnalyticsPage({ user, onLogout }) {
             <h3 className="text-lg font-semibold text-gray-900 mb-6">
               Hazard Category Breakdown
             </h3>
-            <div className="h-[340px]">
+            <div className="h-300px sm:h-340px">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={categoryBreakdown}
@@ -214,12 +183,12 @@ export default function ResponseAnalyticsPage({ user, onLogout }) {
             </div>
           </div>
 
-          {/* Status Distribution - Pie Chart */}
+          {/* Status Distribution - Pie Chart (no custom label) */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 lg:col-span-2">
             <h3 className="text-lg font-semibold text-gray-900 mb-6">
               Overall Status Distribution
             </h3>
-            <div className="h-[400px] flex items-center justify-center">
+            <div className="h-320px sm:h-400px flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -229,7 +198,7 @@ export default function ResponseAnalyticsPage({ user, onLogout }) {
                     innerRadius={90}
                     outerRadius={140}
                     labelLine={false}
-                    label={renderCustomizedLabel} // ← this must point to the function above
+                    // No custom label → percentages will show in tooltip only
                     dataKey="value"
                     paddingAngle={2}
                   >
