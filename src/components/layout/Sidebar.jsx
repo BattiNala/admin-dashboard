@@ -1,7 +1,29 @@
-import { AlertTriangle, Users, BarChart, LogOut } from "lucide-react";
+import {
+  AlertTriangle,
+  Users,
+  BarChart,
+  LogOut,
+  Shield,
+  Building2,
+  UserCog,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Sidebar({ user, onLogout }) {
+  const isSuperAdmin = user?.role === "superadmin";
+
+  const navItems = isSuperAdmin
+    ? [
+      { to: "/superadmin/roles", label: "Roles", Icon: Shield },
+      { to: "/superadmin/departments", label: "Departments", Icon: Building2 },
+      { to: "/superadmin/users", label: "Users", Icon: UserCog },
+    ]
+    : [
+      { to: "/", label: "Department", Icon: AlertTriangle },
+      { to: "/team-staff", label: "My Team Staff", Icon: Users },
+      { to: "/response-analytics", label: "Response Analytics", Icon: BarChart },
+    ];
+
   return (
     <aside className="w-64 bg-white border-r border-gray-200 shrink-0 flex flex-col">
       <div className="p-6 grow">
@@ -19,29 +41,19 @@ export default function Sidebar({ user, onLogout }) {
 
         {/* Navigation */}
         <nav className="space-y-1">
-          <Link
-            to="/"
-            className="flex items-center px-4 py-3 bg-blue-50 text-blue-700 rounded-lg font-medium"
-          >
-            <AlertTriangle className="w-5 h-5 mr-3" />
-            Department
-          </Link>
-
-          <Link
-            to="/team-staff"
-            className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg"
-          >
-            <Users className="w-5 h-5 mr-3" />
-            My Team Staff
-          </Link>
-
-          <Link
-            to="/response-analytics"
-            className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg"
-          >
-            <BarChart className="w-5 h-5 mr-3" />
-            Response Analytics
-          </Link>
+          {navItems.map(({ to, label, Icon }, index) => (
+            <Link
+              key={label}
+              to={to}
+              className={`flex items-center px-4 py-3 rounded-lg font-medium ${index === 0
+                  ? "bg-blue-50 text-blue-700"
+                  : "text-gray-700 hover:bg-gray-100"
+                }`}
+            >
+              <Icon className="w-5 h-5 mr-3" />
+              {label}
+            </Link>
+          ))}
         </nav>
       </div>
 
@@ -56,7 +68,9 @@ export default function Sidebar({ user, onLogout }) {
               <p className="text-sm font-medium text-gray-900">
                 {user?.name || "Admin User"}
               </p>
-              <p className="text-xs text-gray-500">Admin</p>
+              <p className="text-xs text-gray-500">
+                {user?.role === "superadmin" ? "Super Admin" : "Department Admin"}
+              </p>
             </div>
           </div>
 
