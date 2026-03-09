@@ -1,17 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 
 import LoginCard from "@/pages/auth/LoginPage";
 import SuperAdminDashboardPage from "@/pages/superadmin/SuperAdminDashboardPage";
+import RolesPage from "@/pages/superadmin/RolesPage";
+import DepartmentsPage from "@/pages/superadmin/DepartmentsPage";
+import UsersPage from "@/pages/superadmin/UsersPage";
 import DepartmentDashboardPage from "@/pages/dashboard/DepartmentDashboardPage";
 import TeamStaffPage from "@/pages/team/TeamStaffPage";
 import ResponseAnalyticsPage from "@/pages/analytics/ResponseAnalyticsPage";
+import { clearAuth, loadAuth } from "@/utils/authStorage";
 
 function App() {
   const [user, setUser] = useState(null);
 
+  useEffect(() => {
+    const storedUser = loadAuth();
+    if (storedUser) {
+      setUser(storedUser);
+    }
+  }, []);
+
   const handleLogout = () => {
+    clearAuth();
     setUser(null);
   };
 
@@ -58,6 +70,36 @@ function App() {
             element={
               isSuperAdmin ? (
                 <SuperAdminDashboardPage user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/superadmin/roles"
+            element={
+              isSuperAdmin ? (
+                <RolesPage user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/superadmin/departments"
+            element={
+              isSuperAdmin ? (
+                <DepartmentsPage user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/superadmin/users"
+            element={
+              isSuperAdmin ? (
+                <UsersPage user={user} onLogout={handleLogout} />
               ) : (
                 <Navigate to="/login" replace />
               )
