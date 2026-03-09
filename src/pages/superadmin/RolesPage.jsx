@@ -11,7 +11,7 @@ const RolesPage = ({ user, onLogout }) => {
   const [roleName, setRoleName] = useState("");
   const [formError, setFormError] = useState("");
 
-  const { data, isLoading, isError, error } = useListRoles();
+  const { data, isLoading, isError, error, refetch } = useListRoles();
   const { mutate: createRole, isPending: isCreating } = useCreateRole();
 
   const roles = Array.isArray(data) ? data : data?.roles || data?.data || [];
@@ -43,6 +43,7 @@ const RolesPage = ({ user, onLogout }) => {
       {
         onSuccess: () => {
           toast.success("Role created successfully.");
+          refetch();
           handleCloseCreate();
         },
         onError: (err) => {
