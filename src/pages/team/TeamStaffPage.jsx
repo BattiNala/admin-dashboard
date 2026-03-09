@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Plus, X } from "lucide-react";
-import MainLayout from "../components/layout/MainLayout";
-import Badge from "../components/common/Badge";
+import MainLayout from "@/components/layout/MainLayout";
+import Badge from "@/components/common/Badge";
 
 // Mock data - replace with real API later
 const initialTeamMembers = [
