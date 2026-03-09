@@ -3,6 +3,7 @@ import { Eye, EyeOff, Lock, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useLoginUser } from "@/hooks/user/useLoginUser";
+import { saveAuth } from "@/utils/authStorage";
 
 function Input({
   id,
@@ -87,9 +88,16 @@ const LoginCard = ({ setUser, accessDenied = false }) => {
           const roleName = data?.role_name || data?.role || "";
           const isAllowedRole =
             roleName === "superadmin" || roleName === "department_admin";
+          const storedAuth = saveAuth({
+            access_token: data?.access_token,
+            refresh_token: data?.refresh_token,
+            role_name: roleName,
+            is_verified: data?.is_verified,
+          });
           if (setUser) {
             setUser({
               ...data,
+              ...(storedAuth || {}),
               role: roleName,
             });
           }
