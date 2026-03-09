@@ -8,8 +8,8 @@ import {
   CheckCircle,
   Zap,
 } from "lucide-react";
-import Badge from "../components/common/Badge";
-import MainLayout from "../components/layout/MainLayout";
+import Badge from "@/components/common/Badge";
+import MainLayout from "@/components/layout/MainLayout";
 
 // Mock data
 const initialHazards = [

@@ -14,7 +14,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import MainLayout from "../components/layout/MainLayout";
+import MainLayout from "@/components/layout/MainLayout";
 
 // Mock data - replace with real API later
 const monthlyTrends = [
