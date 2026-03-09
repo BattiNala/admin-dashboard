@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "sonner";
 
-import LoginPage from "./pages/Loginpage"
-import DepartmentDashboardPage from "./pages/DepartmentDashboardPage";
-import TeamStaffPage from "./pages/TeamStaffPage";
-import ResponseAnalyticsPage from "./pages/ResponseAnalyticsPage";
+import LoginCard from "@/pages/auth/LoginPage";
+import SuperAdminDashboardPage from "@/pages/superadmin/SuperAdminDashboardPage";
+import DepartmentDashboardPage from "@/pages/dashboard/DepartmentDashboardPage";
+import TeamStaffPage from "@/pages/team/TeamStaffPage";
+import ResponseAnalyticsPage from "@/pages/analytics/ResponseAnalyticsPage";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -13,18 +15,26 @@ function App() {
     setUser(null);
   };
 
+  const isSuperAdmin = user?.role === "superadmin";
+  const isDepartmentAdmin = user?.role === "department_admin";
+  const isAllowedRole = isSuperAdmin || isDepartmentAdmin;
+
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-gray-100">
+        <Toaster richColors position="top-right" />
         <Routes>
-
           <Route
             path="/login"
             element={
               user ? (
-                <Navigate to="/" replace />
+                isAllowedRole ? (
+                  <Navigate to="/" replace />
+                ) : (
+                  <LoginCard setUser={setUser} accessDenied />
+                )
               ) : (
-                <LoginPage setUser={setUser} />
+                <LoginCard setUser={setUser} />
               )
             }
           />
@@ -32,8 +42,22 @@ function App() {
           <Route
             path="/"
             element={
-              user?.role === "admin" ? (
-                <DepartmentDashboardPage user={user} onLogout={handleLogout} />
+              isAllowedRole ? (
+                isSuperAdmin ? (
+                  <Navigate to="/superadmin" replace />
+                ) : (
+                  <DepartmentDashboardPage user={user} onLogout={handleLogout} />
+                )
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/superadmin"
+            element={
+              isSuperAdmin ? (
+                <SuperAdminDashboardPage user={user} onLogout={handleLogout} />
               ) : (
                 <Navigate to="/login" replace />
               )
@@ -42,7 +66,7 @@ function App() {
           <Route
             path="/team-staff"
             element={
-              user?.role === "admin" ? (
+              isAllowedRole ? (
                 <TeamStaffPage user={user} onLogout={handleLogout} />
               ) : (
                 <Navigate to="/login" replace />
@@ -52,7 +76,7 @@ function App() {
           <Route
             path="/response-analytics"
             element={
-              user?.role === "admin" ? (
+              isAllowedRole ? (
                 <ResponseAnalyticsPage user={user} onLogout={handleLogout} />
               ) : (
                 <Navigate to="/login" replace />
@@ -61,7 +85,17 @@ function App() {
           />
           <Route
             path="*"
-            element={<Navigate to={user ? "/" : "/login"} replace />}
+            element={
+              user ? (
+                isAllowedRole ? (
+                  <Navigate to="/" replace />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
           />
         </Routes>
       </div>
