@@ -1,4 +1,3 @@
-// src/pages/TeamStaffPage.jsx
 import React, { useState } from "react";
 import { Plus, X } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";

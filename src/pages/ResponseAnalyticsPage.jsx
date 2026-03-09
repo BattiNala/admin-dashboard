@@ -1,4 +1,3 @@
-// src/pages/ResponseAnalyticsPage.jsx
 import React from "react";
 import {
   LineChart,

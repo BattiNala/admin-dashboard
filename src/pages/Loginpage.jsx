@@ -1,10 +1,8 @@
-// src/pages/LoginPage.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage({ setUser }) {
-  // ← must accept setUser prop
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -23,11 +21,8 @@ export default function LoginPage({ setUser }) {
       const trimmedUsername = username.trim();
 
       if (trimmedUsername === "admin" && password === "admin123") {
-        // Update global user state in App.jsx
         setUser({ name: "Admin User", role: "admin" });
-
-        // Navigate to dashboard
-        navigate("/", { replace: true }); // replace: true avoids back-button issues
+        navigate("/", { replace: true });
       } else {
         setError("Invalid username or password");
       }
@@ -115,11 +110,10 @@ export default function LoginPage({ setUser }) {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-3 px-4 flex items-center justify-center gap-2 font-medium text-white rounded-lg transition-all ${
-                loading
-                  ? "bg-blue-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700 active:bg-blue-800"
-              }`}
+              className={`w-full py-3 px-4 flex items-center justify-center gap-2 font-medium text-white rounded-lg transition-all ${loading
+                ? "bg-blue-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700 active:bg-blue-800"
+                }`}
             >
               {loading ? (
                 <>

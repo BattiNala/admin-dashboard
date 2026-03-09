@@ -1,4 +1,3 @@
-// src/components/dashboard/HighlightCard.jsx
 import React from "react";
 
 export default function HighlightCard({

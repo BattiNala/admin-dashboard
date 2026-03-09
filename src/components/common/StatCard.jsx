@@ -1,4 +1,3 @@
-// src/components/common/StatCard.jsx
 import React from "react";
 
 export default function StatCard({

@@ -1,8 +1,7 @@
-// src/App.jsx
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import LoginPage from "../src/pages/Loginpage" 
+import LoginPage from "./pages/Loginpage"
 import DepartmentDashboardPage from "./pages/DepartmentDashboardPage";
 import TeamStaffPage from "./pages/TeamStaffPage";
 import ResponseAnalyticsPage from "./pages/ResponseAnalyticsPage";
@@ -18,15 +17,14 @@ function App() {
     <BrowserRouter>
       <div className="min-h-screen bg-gray-100">
         <Routes>
-          {/* Login - uses your real LoginPage.jsx */}
-          // src/App.jsx - only change the /login route
+
           <Route
             path="/login"
             element={
               user ? (
                 <Navigate to="/" replace />
               ) : (
-                <LoginPage setUser={setUser} /> // ← pass setUser here
+                <LoginPage setUser={setUser} />
               )
             }
           />
