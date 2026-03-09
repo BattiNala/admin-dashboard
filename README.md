@@ -1,4 +1,6 @@
 # admin-dashboard
+
+````
 /
 ├── public/
 │   ├── batti-nala.png          ← your logo here
@@ -43,3 +45,4 @@
 ├── .env                        # VITE_API_URL=...
 ├── package.json
 └── vite.config.js
+```
