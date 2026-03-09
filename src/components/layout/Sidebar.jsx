@@ -1,4 +1,3 @@
-// src/components/layout/Sidebar.jsx
 import { AlertTriangle, Users, BarChart, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
 

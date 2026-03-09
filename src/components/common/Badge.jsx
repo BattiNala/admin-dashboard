@@ -1,4 +1,3 @@
-// src/components/common/Badge.jsx
 export default function Badge({ children, variant = "default" }) {
   const styles = {
     default: "bg-gray-100 text-gray-800",
@@ -13,9 +12,8 @@ export default function Badge({ children, variant = "default" }) {
 
   return (
     <span
-      className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${
-        styles[variant.toLowerCase()] || styles.default
-      }`}
+      className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${styles[variant.toLowerCase()] || styles.default
+        }`}
     >
       {children}
     </span>

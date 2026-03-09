@@ -1,4 +1,3 @@
-// src/components/layout/MainLayout.jsx
 import React, { useState } from "react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
@@ -10,9 +9,8 @@ export default function MainLayout({ children, user, onLogout }) {
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar - hidden on mobile, shown when open */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:shrink-0`}
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } lg:shrink-0`}
       >
         <Sidebar user={user} onLogout={onLogout} />
       </div>

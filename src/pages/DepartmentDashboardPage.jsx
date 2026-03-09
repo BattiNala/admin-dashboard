@@ -1,4 +1,3 @@
-// src/pages/DepartmentDashboardPage.jsx
 import React, { useState } from "react";
 import {
   Search,
@@ -437,11 +436,10 @@ export default function DepartmentDashboardPage({ user, onLogout }) {
                     <button
                       key={page}
                       onClick={() => goToPage(page)}
-                      className={`px-3 py-1 rounded ${
-                        currentPage === page
+                      className={`px-3 py-1 rounded ${currentPage === page
                           ? "bg-blue-600 text-white"
                           : "border border-gray-300 hover:bg-gray-50"
-                      }`}
+                        }`}
                     >
                       {page}
                     </button>
