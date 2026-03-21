@@ -118,13 +118,13 @@ const LoginCard = ({ setUser, accessDenied = false }) => {
           }
           if (err?.status === 429) {
             toast.error(
-              "Too many attempts. Please wait a few minutes and try again."
+              "Too many attempts. Please wait a few minutes and try again.",
             );
             return;
           }
           toast.error(err?.message || "Unable to sign in. Please try again.");
         },
-      }
+      },
     );
   };
 
@@ -194,10 +194,11 @@ const LoginCard = ({ setUser, accessDenied = false }) => {
                       value={form.username}
                       onChange={handleChange}
                       disabled={isLoggingIn}
-                      className={`pl-11 ${errors.username
-                        ? "border-red-500 focus:ring-red-500"
-                        : "focus:ring-blue-500"
-                        }`}
+                      className={`pl-11 ${
+                        errors.username
+                          ? "border-red-500 focus:ring-red-500"
+                          : "focus:ring-blue-500"
+                      }`}
                     />
                   </div>
                   {errors.username && (
@@ -222,10 +223,11 @@ const LoginCard = ({ setUser, accessDenied = false }) => {
                       value={form.password}
                       onChange={handleChange}
                       disabled={isLoggingIn}
-                      className={`pl-11 pr-11 ${errors.password
-                        ? "border-red-500 focus:ring-red-500"
-                        : "focus:ring-blue-500"
-                        }`}
+                      className={`pl-11 pr-11 ${
+                        errors.password
+                          ? "border-red-500 focus:ring-red-500"
+                          : "focus:ring-blue-500"
+                      }`}
                     />
                     <button
                       type="button"
@@ -247,10 +249,11 @@ const LoginCard = ({ setUser, accessDenied = false }) => {
                 <button
                   type="submit"
                   disabled={isLoggingIn}
-                  className={`w-full py-3 px-4 flex items-center justify-center gap-2 font-medium text-white rounded-lg transition-all ${isLoggingIn
-                    ? "bg-blue-400 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700 active:bg-blue-800"
-                    }`}
+                  className={`w-full py-3 px-4 flex items-center justify-center gap-2 font-medium text-white rounded-lg transition-all ${
+                    isLoggingIn
+                      ? "bg-blue-400 cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-700 active:bg-blue-800"
+                  }`}
                 >
                   {isLoggingIn ? (
                     <>
@@ -285,15 +288,6 @@ const LoginCard = ({ setUser, accessDenied = false }) => {
           )}
 
           <div className="mt-6 text-center text-xs text-gray-500 sm:text-sm">
-            <p>
-              Don&apos;t have an account?{" "}
-              <Link
-                to="/register"
-                className="text-blue-600 hover:underline font-medium"
-              >
-                Register here
-              </Link>
-            </p>
             <p className="mt-2">
               Need help? Contact support at{" "}
               <span className="text-blue-600">support@battinala.gov.np</span>

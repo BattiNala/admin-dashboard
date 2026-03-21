@@ -8,6 +8,11 @@ import RolesPage from "@/pages/superadmin/RolesPage";
 import DepartmentsPage from "@/pages/superadmin/DepartmentsPage";
 import UsersPage from "@/pages/superadmin/UsersPage";
 import DepartmentDashboardPage from "@/pages/dashboard/DepartmentDashboardPage";
+import TeamList from "@/pages/dashboard/Teamlist";
+import StaffList from "@/pages/dashboard/Stafflist";
+import AddStaffPage from "@/pages/dashboard/AddStaff";
+import CreateTeamPage from "@/pages/dashboard/CreateTeam";
+import ChangeEmployeeTeam from "@/pages/dashboard/ChangeEmployeeTeam";
 import TeamStaffPage from "@/pages/team/TeamStaffPage";
 import ResponseAnalyticsPage from "@/pages/analytics/ResponseAnalyticsPage";
 import { clearAuth, loadAuth } from "@/utils/authStorage";
@@ -58,7 +63,10 @@ function App() {
                 isSuperAdmin ? (
                   <Navigate to="/superadmin" replace />
                 ) : (
-                  <DepartmentDashboardPage user={user} onLogout={handleLogout} />
+                  <DepartmentDashboardPage
+                    user={user}
+                    onLogout={handleLogout}
+                  />
                 )
               ) : (
                 <Navigate to="/login" replace />
@@ -100,6 +108,56 @@ function App() {
             element={
               isSuperAdmin ? (
                 <UsersPage user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/dashboard/teams"
+            element={
+              isAllowedRole ? (
+                <TeamList user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/dashboard/staff"
+            element={
+              isAllowedRole ? (
+                <StaffList user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/dashboard/add-staff"
+            element={
+              isAllowedRole ? (
+                <AddStaffPage user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/dashboard/create-team"
+            element={
+              isAllowedRole ? (
+                <CreateTeamPage user={user} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/dashboard/change-team"
+            element={
+              isAllowedRole ? (
+                <ChangeEmployeeTeam user={user} onLogout={handleLogout} />
               ) : (
                 <Navigate to="/login" replace />
               )
