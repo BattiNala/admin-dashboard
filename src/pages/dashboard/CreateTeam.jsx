@@ -1,193 +1,153 @@
-// pages/dashboard/CreateTeamPage.jsx
-import React, { useState } from "react";
-import {
-  PlusCircle,
-  Loader2,
-  CheckCircle,
-  AlertCircle,
-  ArrowLeft,
-} from "lucide-react";
+// pages/dashboard/CreateTeam.jsx
+import React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { PlusCircle, Loader2, MapPin, ArrowLeft, Globe } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import MainLayout from "@/components/layout/MainLayout";
-
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
+import { useCreateTeam } from "@/hooks/team/useTeam";
+import { teamSchema } from "@/schemas/teamSchema";
 
 export default function CreateTeamPage({ user, onLogout }) {
-  const [formData, setFormData] = useState({
-    team_name: "",
-    // description: "",     // ← uncomment if your TeamCreate schema has description
+  const navigate = useNavigate();
+  const { mutate: createTeam, isPending: submitting } = useCreateTeam();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(teamSchema),
+    defaultValues: {
+      team_name: "",
+      base_latitude: 27.7172, // Kathmandu fallback
+      base_longitude: 85.3240,
+      coverage_radius_km: 5,
+    },
   });
 
-  const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setMessage({ type: "", text: "" });
-
-    // Basic validation
-    if (!formData.team_name.trim()) {
-      setMessage({ type: "error", text: "Team name is required" });
-      setSubmitting(false);
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem("token");
-
-      const payload = {
-        team_name: formData.team_name.trim(),
-        // description: formData.description.trim() || undefined,   // ← add if needed
-      };
-
-      const response = await fetch(`${API_BASE}/create-team`, {
-        method: "POST",
-        headers: {
-          Authorization: token ? `Bearer ${token}` : "",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.detail || "Failed to create team");
-      }
-
-      const result = await response.json();
-      // Your backend returns: { "message": "Team created successfully. ..." }
-
-      setMessage({
-        type: "success",
-        text: result.message || "Team created successfully!",
-      });
-
-      // Optional: auto-redirect after 2 seconds
-      setTimeout(() => {
-        window.location.href = "/dashboard/TeamList";
-      }, 2000);
-    } catch (err) {
-      setMessage({
-        type: "error",
-        text: err.message || "Something went wrong",
-      });
-    } finally {
-      setSubmitting(false);
-    }
+  const onSubmit = (data) => {
+    createTeam(data, {
+      onSuccess: (result) => {
+        toast.success(result.message || "New team successfully established.");
+        setTimeout(() => navigate("/dashboard/teams"), 1500);
+      },
+      onError: (err) => {
+        toast.error(err.message || "Failed to create team.");
+      },
+    });
   };
 
   return (
     <MainLayout user={user} onLogout={onLogout}>
-      <div className="p-6 max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-2">
-            <a
-              href="/dashboard/TeamList"
-              className="text-gray-600 hover:text-gray-900 flex items-center gap-1"
-            >
-              <ArrowLeft size={18} />
-              Back to Teams
-            </a>
-          </div>
+      <div className="p-8 max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-500">
+        
+        <div className="flex items-center justify-between">
+          <Link 
+            to="/dashboard/teams" 
+            className="group flex items-center gap-2 text-gray-400 hover:text-blue-600 font-extrabold text-[10px] uppercase tracking-[0.2em] transition-all"
+          >
+            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+            Return to HQ
+          </Link>
+        </div>
 
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <PlusCircle className="w-8 h-8 text-blue-600" />
-            Create New Team
+        <div className="space-y-4">
+          <div className="w-16 h-16 bg-blue-600 rounded-[1.5rem] flex items-center justify-center shadow-xl shadow-blue-100 mb-2">
+            <Globe className="w-8 h-8 text-white animate-pulse-slow" />
+          </div>
+          <h1 className="text-4xl font-black text-gray-900 tracking-tight">
+            Establish Response Team
           </h1>
-          <p className="mt-2 text-gray-600">
-            Add a new team to organize work in your department
+          <p className="text-lg text-gray-500 font-medium leading-relaxed">
+            Define a new dispatch unit with a specific geographic center and operational coverage area.
           </p>
         </div>
 
-        {/* Messages */}
-        {message.text && (
-          <div
-            className={`mb-6 p-4 rounded-lg border flex items-start gap-3 ${
-              message.type === "success"
-                ? "bg-green-50 border-green-200 text-green-800"
-                : "bg-red-50 border-red-200 text-red-800"
-            }`}
-          >
-            {message.type === "success" ? (
-              <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
-            ) : (
-              <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
-            )}
-            <p className="text-sm">{message.text}</p>
-          </div>
-        )}
-
-        {/* Form */}
         <form
-          onSubmit={handleSubmit}
-          className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8 space-y-6"
+          onSubmit={handleSubmit(onSubmit)}
+          className="bg-white rounded-[3rem] shadow-2xl shadow-gray-200/40 border border-gray-100/50 p-12 space-y-10"
         >
-          {/* Team Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Team Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              name="team_name"
-              value={formData.team_name}
-              onChange={handleChange}
-              required
-              maxLength={100}
-              placeholder="e.g. Emergency Response Team"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
+          <div className="space-y-8">
+            {/* Team Name */}
+            <div className="space-y-3">
+              <label className="text-[11px] font-black text-gray-300 uppercase tracking-widest block pl-1">
+                Unit Identification Name
+              </label>
+              <input
+                {...register("team_name")}
+                className={`w-full px-8 py-5 bg-gray-50 border-none rounded-3xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:bg-white transition-all text-xl font-bold text-gray-900 placeholder:text-gray-200 ${errors.team_name ? 'ring-2 ring-red-500/20' : ''}`}
+                placeholder="e.g. Kathmandu North Emergency"
+              />
+              {errors.team_name && <p className="text-red-500 text-xs font-bold pl-2">{errors.team_name.message}</p>}
+            </div>
+
+            {/* Coordinates Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+              <div className="space-y-3">
+                <label className="text-[11px] font-black text-gray-300 uppercase tracking-widest block pl-1">
+                  Base Latitude
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute right-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                  <input
+                    {...register("base_latitude")}
+                    type="number"
+                    step="any"
+                    className="w-full px-8 py-5 bg-gray-50 border-none rounded-3xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:bg-white transition-all text-xl font-bold text-gray-900"
+                  />
+                </div>
+                {errors.base_latitude && <p className="text-red-500 text-xs font-bold pl-2">Invalid latitude</p>}
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-[11px] font-black text-gray-300 uppercase tracking-widest block pl-1">
+                  Base Longitude
+                </label>
+                 <div className="relative">
+                  <MapPin className="absolute right-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                  <input
+                    {...register("base_longitude")}
+                    type="number"
+                    step="any"
+                    className="w-full px-8 py-5 bg-gray-50 border-none rounded-3xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:bg-white transition-all text-xl font-bold text-gray-900"
+                  />
+                </div>
+                {errors.base_longitude && <p className="text-red-500 text-xs font-bold pl-2">Invalid longitude</p>}
+              </div>
+            </div>
+
+            {/* Radius */}
+            <div className="space-y-3">
+              <label className="text-[11px] font-black text-gray-300 uppercase tracking-widest block pl-1">
+                Operational Radius (Kilometers)
+              </label>
+              <input
+                {...register("coverage_radius_km")}
+                type="number"
+                step="0.1"
+                className="w-full px-8 py-5 bg-gray-50 border-none rounded-3xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:bg-white transition-all text-xl font-bold text-gray-900"
+              />
+              {errors.coverage_radius_km && <p className="text-red-500 text-xs font-bold pl-2">{errors.coverage_radius_km.message}</p>}
+            </div>
           </div>
 
-          {/* Optional: Description (uncomment if your backend supports it) */}
-          {/* <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Description (optional)
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows={3}
-              placeholder="Brief description of the team's responsibilities..."
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div> */}
-
-          {/* Submit Button */}
-          <div className="pt-4">
-            <button
-              type="submit"
-              disabled={submitting}
-              className={`w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium transition-colors
-                ${submitting ? "opacity-70 cursor-not-allowed" : "hover:bg-blue-700"}`}
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Creating team...
-                </>
-              ) : (
-                <>
-                  <PlusCircle size={18} />
-                  Create Team
-                </>
-              )}
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full py-6 bg-blue-600 text-white rounded-3xl font-black text-xl tracking-wider hover:bg-blue-700 hover:shadow-2xl hover:shadow-blue-200 active:scale-[0.97] transition-all disabled:opacity-50 flex items-center justify-center gap-4 group"
+          >
+            {submitting ? (
+              <Loader2 className="w-8 h-8 animate-spin" />
+            ) : (
+              <>
+                <PlusCircle size={24} className="group-hover:rotate-90 transition-transform duration-300" />
+                Initialize Unit
+              </>
+            )}
+          </button>
         </form>
-
-        {/* Optional hint */}
-        <div className="mt-6 text-sm text-gray-500 text-center">
-          After creation, you can assign staff members to this team from the
-          staff management page.
-        </div>
       </div>
     </MainLayout>
   );

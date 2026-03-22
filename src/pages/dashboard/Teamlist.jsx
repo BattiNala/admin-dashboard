@@ -1,53 +1,17 @@
 // pages/dashboard/TeamList.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { Users, Search, Plus, Loader2, AlertCircle } from "lucide-react";
 import Badge from "@/components/common/Badge";
 import MainLayout from "@/components/layout/MainLayout";
+import { useListTeams } from "@/hooks/team/useTeam";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
 
 export default function TeamList({ user, onLogout }) {
-  const [teams, setTeams] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-
-  // Fetch teams from backend
-  useEffect(() => {
-    const fetchTeams = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const token = localStorage.getItem("token");
-
-        const response = await fetch(`${API_BASE}/list-teams`, {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : "",
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          if (response.status === 403)
-            throw new Error("Access denied – you need department admin rights");
-          if (response.status === 401) throw new Error("Please login again");
-          throw new Error(`Failed to load teams (${response.status})`);
-        }
-
-        const data = await response.json();
-        // Assuming response shape: { teams: [ {team_id, team_name, ...} ] }
-        setTeams(data.teams || []);
-      } catch (err) {
-        setError(err.message || "Could not load department teams");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTeams();
-  }, []);
+  
+  const { data: teams = [], isLoading: loading, isError: error } = useListTeams();
 
   // Filter teams by search
   const filteredTeams = teams.filter(
@@ -71,13 +35,13 @@ export default function TeamList({ user, onLogout }) {
             </p>
           </div>
 
-          <a
-            href="/dashboard/CreateTeamPage"
+          <Link
+            to="/dashboard/create-team"
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors"
           >
             <Plus size={16} />
             Create New Team
-          </a>
+          </Link>
         </div>
 
         {/* Main content area */}
@@ -92,7 +56,7 @@ export default function TeamList({ user, onLogout }) {
             <h3 className="text-lg font-medium text-red-800 mb-2">
               Failed to load teams
             </h3>
-            <p className="text-red-700">{error}</p>
+            <p className="text-red-700">Please try again later.</p>
             <button
               onClick={() => window.location.reload()}
               className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
