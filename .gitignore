@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# MD files
+department_admin.md
+PROJECT_STRUCTURE.md

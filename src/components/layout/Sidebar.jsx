@@ -7,10 +7,11 @@ import {
   Building2,
   UserCog,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 export default function Sidebar({ user, onLogout }) {
   const isSuperAdmin = user?.role === "superadmin";
+  const location = useLocation();
 
   const navItems = isSuperAdmin
     ? [
@@ -19,8 +20,9 @@ export default function Sidebar({ user, onLogout }) {
       { to: "/superadmin/users", label: "Users", Icon: UserCog },
     ]
     : [
-      { to: "/", label: "Department", Icon: AlertTriangle },
-      { to: "/team-staff", label: "My Team Staff", Icon: Users },
+      { to: "/", label: "Dashboard", Icon: AlertTriangle },
+      { to: "/dashboard/teams", label: "Teams", Icon: Building2 },
+      { to: "/dashboard/staff", label: "Department Staff", Icon: UserCog },
       { to: "/response-analytics", label: "Response Analytics", Icon: BarChart },
     ];
 
@@ -28,32 +30,40 @@ export default function Sidebar({ user, onLogout }) {
     <aside className="w-64 bg-white border-r border-gray-200 shrink-0 flex flex-col">
       <div className="p-6 grow">
         {/* Logo + Brand */}
-        <div className="flex items-center gap-3 mb-10">
-          <div className="w-10 h-10 bg-purple-700 rounded-lg flex items-center justify-center text-white font-bold overflow-hidden">
+        <Link to="/" className="flex items-center gap-3 mb-10 group">
+          <div className="w-10 h-10 bg-purple-700 rounded-lg flex items-center justify-center text-white font-bold overflow-hidden group-hover:scale-105 transition-transform">
             <img
               src="/batti-nala.png"
               alt="BattiNala Logo"
               className="w-full h-full object-contain"
             />
           </div>
-          <span className="text-xl font-bold text-gray-900">BattiNala</span>
-        </div>
+          <span className="text-xl font-bold text-gray-900 group-hover:text-blue-700 transition-colors">BattiNala</span>
+        </Link>
 
         {/* Navigation */}
         <nav className="space-y-1">
-          {navItems.map(({ to, label, Icon }, index) => (
-            <Link
-              key={label}
-              to={to}
-              className={`flex items-center px-4 py-3 rounded-lg font-medium ${index === 0
-                  ? "bg-blue-50 text-blue-700"
-                  : "text-gray-700 hover:bg-gray-100"
+          {navItems.map(({ to, label, Icon }) => {
+            const isActive =
+              to === "/"
+                ? location.pathname === "/"
+                : location.pathname.startsWith(to);
+
+            return (
+              <Link
+                key={label}
+                to={to}
+                className={`flex items-center px-4 py-3 rounded-lg font-medium ${
+                  isActive
+                    ? "bg-blue-50 text-blue-700"
+                    : "text-gray-700 hover:bg-gray-100"
                 }`}
-            >
-              <Icon className="w-5 h-5 mr-3" />
-              {label}
-            </Link>
-          ))}
+              >
+                <Icon className="w-5 h-5 mr-3" />
+                {label}
+              </Link>
+            );
+          })}
         </nav>
       </div>
 

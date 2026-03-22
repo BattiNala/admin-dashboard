@@ -27,8 +27,8 @@ export default function Header({ user, onMenuClick }) {
             <h1 className="text-xl font-bold text-gray-900 truncate">
               Batti Nala
             </h1>
-            <p className="text-sm text-gray-500 truncate">
-              Municipal Issue Reporting System
+            <p className="text-sm text-gray-500 hidden sm:block max-w-2xl">
+              Resolving infrastructure issues from Batti and Nala reported by citizens.
             </p>
           </div>
         </div>

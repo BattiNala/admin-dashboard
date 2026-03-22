@@ -8,6 +8,9 @@ export default function Badge({ children, variant = "default" }) {
     pending: "bg-red-100 text-red-800",
     "in progress": "bg-yellow-100 text-yellow-800",
     resolved: "bg-green-100 text-green-800",
+    available: "bg-green-100 text-green-800",
+    busy: "bg-amber-100 text-amber-800",
+    off_duty: "bg-gray-100 text-gray-500",
   };
 
   return (
