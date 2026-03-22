@@ -1,7 +1,6 @@
 import { loadAuth, updateTokens } from "@/utils/authStorage";
 import { resolveApiUrl } from "@/utils/apiUrl";
 
-/** Must use `/api/...` so Vite dev/preview proxy forwards to the backend (see vite.config.js). */
 const DEFAULT_REFRESH_ENDPOINT = "/api/auth/refresh";
 
 const prepareInit = (init = {}) => {

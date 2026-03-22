@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
-
 import LoginCard from "@/pages/auth/LoginPage";
 import SuperAdminDashboardPage from "@/pages/superadmin/SuperAdminDashboardPage";
 import RolesPage from "@/pages/superadmin/RolesPage";
@@ -15,7 +14,9 @@ import CreateTeamPage from "@/pages/dashboard/CreateTeam";
 import ChangeEmployeeTeam from "@/pages/dashboard/ChangeEmployeeTeam";
 import TeamStaffPage from "@/pages/team/TeamStaffPage";
 import ResponseAnalyticsPage from "@/pages/analytics/ResponseAnalyticsPage";
+
 import { clearAuth, loadAuth } from "@/utils/authStorage";
+import { RequireAuth, RequireSuperAdmin, RequireDeptAdmin } from "@/routes/ProtectedRoute";
 
 function App() {
   const [user, setUser] = useState(() => loadAuth());
@@ -25,171 +26,44 @@ function App() {
     setUser(null);
   };
 
-  const isSuperAdmin = user?.role === "superadmin";
-  const isDepartmentAdmin = user?.role === "department_admin";
-  const isAllowedRole = isSuperAdmin || isDepartmentAdmin;
-
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-gray-100">
         <Toaster richColors position="top-right" />
         <Routes>
-          <Route
-            path="/login"
-            element={
-              user ? (
-                isAllowedRole ? (
-                  <Navigate to="/" replace />
-                ) : (
-                  <LoginCard setUser={setUser} accessDenied />
-                )
-              ) : (
-                <LoginCard setUser={setUser} />
-              )
-            }
+          {/* Public / Auth */}
+          <Route 
+            path="/login" 
+            element={user ? <Navigate to="/" replace /> : <LoginCard setUser={setUser} />} 
           />
-          {/* Protected routes */}
-          <Route
-            path="/"
-            element={
-              isAllowedRole ? (
-                isSuperAdmin ? (
-                  <Navigate to="/superadmin" replace />
-                ) : (
-                  <DepartmentDashboardPage
-                    user={user}
-                    onLogout={handleLogout}
-                  />
-                )
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-          <Route
-            path="/superadmin"
-            element={
-              isSuperAdmin ? (
-                <SuperAdminDashboardPage user={user} onLogout={handleLogout} />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-          <Route
-            path="/superadmin/roles"
-            element={
-              isSuperAdmin ? (
-                <RolesPage user={user} onLogout={handleLogout} />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-          <Route
-            path="/superadmin/departments"
-            element={
-              isSuperAdmin ? (
-                <DepartmentsPage user={user} onLogout={handleLogout} />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-          <Route
-            path="/superadmin/users"
-            element={
-              isSuperAdmin ? (
-                <UsersPage user={user} onLogout={handleLogout} />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-          <Route
-            path="/dashboard/teams"
-            element={
-              isAllowedRole ? (
-                <TeamList user={user} onLogout={handleLogout} />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-          <Route
-            path="/dashboard/staff"
-            element={
-              isAllowedRole ? (
-                <StaffList user={user} onLogout={handleLogout} />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-          <Route
-            path="/dashboard/add-staff"
-            element={
-              isAllowedRole ? (
-                <AddStaffPage user={user} onLogout={handleLogout} />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-          <Route
-            path="/dashboard/create-team"
-            element={
-              isAllowedRole ? (
-                <CreateTeamPage user={user} onLogout={handleLogout} />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-          <Route
-            path="/dashboard/change-team"
-            element={
-              isAllowedRole ? (
-                <ChangeEmployeeTeam user={user} onLogout={handleLogout} />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-          <Route
-            path="/team-staff"
-            element={
-              isAllowedRole ? (
-                <TeamStaffPage user={user} onLogout={handleLogout} />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-          <Route
-            path="/response-analytics"
-            element={
-              isAllowedRole ? (
-                <ResponseAnalyticsPage user={user} onLogout={handleLogout} />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-          <Route
-            path="*"
-            element={
-              user ? (
-                isAllowedRole ? (
-                  <Navigate to="/" replace />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
+
+          {/* Root Switcher */}
+          <Route path="/" element={
+            <RequireAuth user={user}>
+              {user?.role === "superadmin" 
+                ? <Navigate to="/superadmin" replace /> 
+                : <DepartmentDashboardPage user={user} onLogout={handleLogout} />}
+            </RequireAuth>
+          } />
+
+          {/* Superadmin Protected Routes */}
+          <Route path="/superadmin" element={<RequireSuperAdmin user={user}><SuperAdminDashboardPage user={user} onLogout={handleLogout} /></RequireSuperAdmin>} />
+          <Route path="/superadmin/roles" element={<RequireSuperAdmin user={user}><RolesPage user={user} onLogout={handleLogout} /></RequireSuperAdmin>} />
+          <Route path="/superadmin/departments" element={<RequireSuperAdmin user={user}><DepartmentsPage user={user} onLogout={handleLogout} /></RequireSuperAdmin>} />
+          <Route path="/superadmin/users" element={<RequireSuperAdmin user={user}><UsersPage user={user} onLogout={handleLogout} /></RequireSuperAdmin>} />
+
+          {/* Department Admin Protected Routes */}
+          <Route path="/dashboard/teams" element={<RequireDeptAdmin user={user}><TeamList user={user} onLogout={handleLogout} /></RequireDeptAdmin>} />
+          <Route path="/dashboard/staff" element={<RequireDeptAdmin user={user}><StaffList user={user} onLogout={handleLogout} /></RequireDeptAdmin>} />
+          <Route path="/dashboard/add-staff" element={<RequireDeptAdmin user={user}><AddStaffPage user={user} onLogout={handleLogout} /></RequireDeptAdmin>} />
+          <Route path="/dashboard/create-team" element={<RequireDeptAdmin user={user}><CreateTeamPage user={user} onLogout={handleLogout} /></RequireDeptAdmin>} />
+          <Route path="/dashboard/change-team" element={<RequireDeptAdmin user={user}><ChangeEmployeeTeam user={user} onLogout={handleLogout} /></RequireDeptAdmin>} />
+          
+          <Route path="/team-staff" element={<RequireDeptAdmin user={user}><TeamStaffPage user={user} onLogout={handleLogout} /></RequireDeptAdmin>} />
+          <Route path="/response-analytics" element={<RequireDeptAdmin user={user}><ResponseAnalyticsPage user={user} onLogout={handleLogout} /></RequireDeptAdmin>} />
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
     </BrowserRouter>
