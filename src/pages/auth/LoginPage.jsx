@@ -2,7 +2,15 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Lock, User, Loader2, ShieldCheck, AlertCircle } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Lock,
+  User,
+  Loader2,
+  ShieldCheck,
+  AlertCircle,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useLoginUser } from "@/hooks/user/useLoginUser";
@@ -32,12 +40,16 @@ export default function LoginPage({ setUser, accessDenied = false }) {
       {
         onSuccess: (data) => {
           const roleName = data?.role_name || data?.role || "";
-          const isAllowed = roleName === "superadmin" || roleName === "department_admin";
-          
+          const isAllowed =
+            roleName === "superadmin" || roleName === "department_admin";
+
           const dept = data?.department;
-          const departmentId = data?.department_id ?? dept?.department_id ?? dept?.id;
-          const departmentName = data?.department_name ?? dept?.department_name ?? dept?.name ?? "";
-          const displayName = data?.full_name ?? data?.name ?? data?.username ?? "";
+          const departmentId =
+            data?.department_id ?? dept?.department_id ?? dept?.id;
+          const departmentName =
+            data?.department_name ?? dept?.department_name ?? dept?.name ?? "";
+          const displayName =
+            data?.full_name ?? data?.name ?? data?.username ?? "";
 
           const authInfo = {
             access_token: data?.access_token,
@@ -51,7 +63,7 @@ export default function LoginPage({ setUser, accessDenied = false }) {
           };
 
           const storedAuth = saveAuth(authInfo);
-          
+
           if (setUser) {
             setUser({
               ...data,
@@ -73,43 +85,46 @@ export default function LoginPage({ setUser, accessDenied = false }) {
         },
         onError: (err) => {
           if (err?.status === 401) {
-            toast.error("Invalid credentials provided. Please check and try again.");
+            toast.error(
+              "Invalid credentials provided. Please check and try again.",
+            );
           } else if (err?.status === 429) {
             toast.error("Too many attempts. Security cooldown active.");
           } else {
-            toast.error(err?.message || "Internal connection error. Please try later.");
+            toast.error(
+              err?.message || "Internal connection error. Please try later.",
+            );
           }
         },
-      }
+      },
     );
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#fdfdfd] relative overflow-hidden font-outfit">
-      
       {/* Background Decor */}
       <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-blue-50/50 rounded-full blur-3xl opacity-60" />
       <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-indigo-50/50 rounded-full blur-3xl opacity-60" />
 
       <div className="w-full max-w-xl p-6 sm:p-10 z-10 animate-in fade-in zoom-in duration-700">
-        
         {/* Branding */}
         <div className="flex flex-col items-center mb-12 transform hover:scale-105 transition-transform duration-500 cursor-default">
-           <div className="w-24 h-24 bg-white rounded-[2rem] shadow-2xl shadow-blue-100 flex items-center justify-center border border-blue-50 mb-6 group">
-             <img
-                src="/batti-nala.png"
-                alt="Logo"
-                className="w-16 h-16 object-contain group-hover:rotate-12 transition-transform duration-300"
-              />
-           </div>
-           <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight text-center">
-             Batti Nala <span className="text-blue-600">Admin</span>
-           </h1>
-           <p className="mt-3 text-gray-400 font-medium text-lg">Central Infrastructure Command</p>
+          <div className="w-24 h-24 bg-white rounded-[2rem] shadow-2xl shadow-blue-100 flex items-center justify-center border border-blue-50 mb-6 group">
+            <img
+              src="/batti-nala.png"
+              alt="Logo"
+              className="w-16 h-16 object-contain group-hover:rotate-12 transition-transform duration-300"
+            />
+          </div>
+          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight text-center">
+            Batti Nala <span className="text-blue-600">Admin</span>
+          </h1>
+          {/* <p className="mt-3 text-gray-400 font-medium text-lg">
+            Central Infrastructure Command
+          </p> */}
         </div>
 
         <div className="bg-white rounded-[3.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] border border-gray-50/80 p-10 sm:p-14 space-y-10 relative">
-          
           {accessDenied && (
             <div className="p-5 bg-red-50/50 rounded-3xl border border-red-100 flex items-center gap-4 animate-bounce-short">
               <AlertCircle className="w-6 h-6 text-red-500 shrink-0" />
@@ -121,29 +136,39 @@ export default function LoginPage({ setUser, accessDenied = false }) {
 
           <div className="space-y-2">
             <h2 className="text-2xl font-black text-gray-900">Sign In</h2>
-            <p className="text-gray-400 font-medium text-sm">Enter your credentials to access the secure dashboard.</p>
+            <p className="text-gray-400 font-medium text-sm">
+              Enter your credentials to access the secure dashboard.
+            </p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
             <div className="space-y-6">
               {/* Username/Email Input */}
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] pl-2">Email Address / Username</label>
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] pl-2">
+                  Email Address / Username
+                </label>
                 <div className="relative group">
                   <User className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-blue-500 transition-colors" />
                   <input
                     {...register("username")}
-                    placeholder="e.g. admin@battinala.gov or username"
+                    placeholder="e.g. admin@battinala.com or username"
                     disabled={isLoggingIn}
-                    className={`w-full pl-16 pr-8 py-5 bg-gray-50/50 border-none rounded-3xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:bg-white transition-all text-lg font-bold text-gray-900 placeholder:text-gray-200 ${errors.username ? 'ring-2 ring-red-100 bg-red-50/10' : ''}`}
+                    className={`w-full pl-16 pr-8 py-5 bg-gray-50/50 border-none rounded-3xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:bg-white transition-all text-lg font-bold text-gray-900 placeholder:text-gray-200 ${errors.username ? "ring-2 ring-red-100 bg-red-50/10" : ""}`}
                   />
                 </div>
-                {errors.username && <p className="text-red-500 text-[11px] font-bold pl-2">{errors.username.message}</p>}
+                {errors.username && (
+                  <p className="text-red-500 text-[11px] font-bold pl-2">
+                    {errors.username.message}
+                  </p>
+                )}
               </div>
 
               {/* Password Input */}
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] pl-2">Passcode</label>
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] pl-2">
+                  Passcode
+                </label>
                 <div className="relative group">
                   <Lock className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-blue-500 transition-colors" />
                   <input
@@ -151,7 +176,7 @@ export default function LoginPage({ setUser, accessDenied = false }) {
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     disabled={isLoggingIn}
-                    className={`w-full pl-16 pr-16 py-5 bg-gray-50/50 border-none rounded-3xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:bg-white transition-all text-lg font-bold text-gray-900 placeholder:text-gray-200 ${errors.password ? 'ring-2 ring-red-100 bg-red-50/10' : ''}`}
+                    className={`w-full pl-16 pr-16 py-5 bg-gray-50/50 border-none rounded-3xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:bg-white transition-all text-lg font-bold text-gray-900 placeholder:text-gray-200 ${errors.password ? "ring-2 ring-red-100 bg-red-50/10" : ""}`}
                   />
                   <button
                     type="button"
@@ -161,7 +186,11 @@ export default function LoginPage({ setUser, accessDenied = false }) {
                     {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
                   </button>
                 </div>
-                {errors.password && <p className="text-red-500 text-[11px] font-bold pl-2">{errors.password.message}</p>}
+                {errors.password && (
+                  <p className="text-red-500 text-[11px] font-bold pl-2">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -174,8 +203,11 @@ export default function LoginPage({ setUser, accessDenied = false }) {
                 <Loader2 className="w-8 h-8 animate-spin" />
               ) : (
                 <>
-                  <span>Sign In To Portal</span>
-                  <ShieldCheck size={24} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                  <span>Sign In</span>
+                  {/* <ShieldCheck
+                    size={24}
+                    className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
+                  /> */}
                 </>
               )}
             </button>
@@ -183,7 +215,7 @@ export default function LoginPage({ setUser, accessDenied = false }) {
 
           <div className="text-center">
             <p className="text-sm text-gray-400 font-medium tracking-tight italic">
-              Official Government Administration Node — Kathmandu, Nepal
+              Official Batti Nala Admin Portal - For Authorized Personnel Only
             </p>
           </div>
         </div>

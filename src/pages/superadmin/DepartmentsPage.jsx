@@ -76,7 +76,7 @@ export default function DepartmentsPage({ user, onLogout }) {
               Municipal Departments
             </h1>
             <p className="text-gray-500 font-medium max-w-md">
-              Govern official infrastructure authorities and their systemic administrative nodes.
+              Govern official infrastructure authorities and their systemic administrative.
             </p>
           </div>
 
@@ -169,7 +169,7 @@ export default function DepartmentsPage({ user, onLogout }) {
                 </div>
              ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4">
-                   {filtered.map(dept => (
+                    {filtered.map(dept => (
                       <div key={dept.department_id} className="group bg-gray-50/30 hover:bg-white p-6 rounded-[2rem] border border-transparent hover:border-gray-100 hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-300 flex items-center justify-between">
                          <div className="flex items-center gap-6">
                             <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center border border-gray-100 shadow-sm group-hover:scale-105 transition-transform duration-500">

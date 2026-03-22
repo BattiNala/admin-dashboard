@@ -43,3 +43,15 @@ export const useDeleteDepartment = () => {
     },
   });
 };
+export const useListDepartmentAdmins = (departmentId = null) => {
+  return useQuery({
+    queryKey: ["departmentAdminList", departmentId],
+    queryFn: async () => {
+      const url = departmentId 
+        ? `/department/list-department-admins?department_id=${departmentId}`
+        : "/department/list-department-admins";
+      const data = await apiClient.get(url);
+      return Array.isArray(data) ? data : data.admins || [];
+    },
+  });
+};

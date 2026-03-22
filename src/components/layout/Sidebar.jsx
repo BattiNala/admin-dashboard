@@ -15,9 +15,9 @@ export default function Sidebar({ user, onLogout }) {
 
   const navItems = isSuperAdmin
     ? [
-      { to: "/superadmin/roles", label: "Roles", Icon: Shield },
+      // { to: "/superadmin/roles", label: "Roles", Icon: Shield },
       { to: "/superadmin/departments", label: "Departments", Icon: Building2 },
-      { to: "/superadmin/users", label: "Users", Icon: UserCog },
+      { to: "/superadmin/users", label: "Dept. Admins", Icon: UserCog },
     ]
     : [
       { to: "/", label: "Dashboard", Icon: AlertTriangle },
