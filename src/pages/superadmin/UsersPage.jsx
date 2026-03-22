@@ -1,405 +1,214 @@
+// pages/superadmin/UsersPage.jsx
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import MainLayout from "@/components/layout/MainLayout";
-import { toast } from "sonner";
-import {
-  UserCog,
-  AlertCircle,
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { 
+  UserCog, 
+  Mail, 
+  Lock, 
+  User, 
+  Phone, 
+  Building2, 
+  Eye, 
+  EyeOff, 
+  Loader2, 
   CheckCircle,
-  Eye,
-  EyeOff,
-  Building2,
-  Mail,
-  Phone,
-  Lock,
-  User,
-  Info,
+  AlertCircle,
+  ShieldAlert
 } from "lucide-react";
-import {
-  VALIDATION_RULES,
-  FIELD_LABELS,
-  PLACEHOLDERS,
-} from "@/constants/validation";
-import { useFormValidation } from "@/hooks/useFormValidation";
-import { useListDepartments } from "@/hooks/department/useListDepartments";
-import { useCreateDepartmentAdmin } from "@/hooks/user/useCreateDepartmentAdmin";
-import { messageFromFastApiDetail } from "@/utils/apiErrorMessage";
+import { toast } from "sonner";
+import MainLayout from "@/components/layout/MainLayout";
+import { useListDepartments } from "@/hooks/superadmin/useDepartment";
+import { useCreateDepartmentAdmin } from "@/hooks/superadmin/useAdmin";
+import { adminSchema } from "@/schemas/adminSchema";
 
-const INITIAL_DEPARTMENT_ADMIN_FORM = {
-  name: "",
-  email: "",
-  password: "",
-  phone_number: "",
-  department_id: "",
-};
-
-const DEPARTMENT_ADMIN_RULES = {
-  name: VALIDATION_RULES.name,
-  email: VALIDATION_RULES.email,
-  password: VALIDATION_RULES.password,
-  phone_number: VALIDATION_RULES.phone_number,
-  department_id: {
-    required: true,
-    validate: (v) => {
-      const n = parseInt(String(v), 10);
-      if (!v || String(v).trim() === "" || Number.isNaN(n) || n < 1) {
-        return VALIDATION_RULES.department_id.message.required;
-      }
-      return "";
-    },
-  },
-};
-
-const inputClass = (hasError) =>
-  `w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
-    hasError ? "border-red-500 focus:ring-red-500" : "border-gray-300"
-  }`;
-
-const UsersPage = ({ user, onLogout }) => {
+export default function UsersPage({ user, onLogout }) {
   const [showPassword, setShowPassword] = useState(false);
+  const { data: departments = [], isLoading: departmentsLoading, isError: departmentsError } = useListDepartments();
+  const { mutate: createAdmin, isPending: creating } = useCreateDepartmentAdmin();
 
   const {
-    values: formData,
-    errors,
-    touched,
-    handleChange,
-    handleBlur,
-    validateForm,
-    resetForm,
-  } = useFormValidation(INITIAL_DEPARTMENT_ADMIN_FORM, DEPARTMENT_ADMIN_RULES);
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(adminSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      phone_number: "",
+      department_id: "",
+    },
+  });
 
-  const {
-    data: departments = [],
-    isLoading: departmentsLoading,
-    isError: departmentsError,
-    refetch: refetchDepartments,
-  } = useListDepartments();
-
-  const { mutate: createDepartmentAdmin, isPending } =
-    useCreateDepartmentAdmin();
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!validateForm()) {
-      toast.error("Please correct the errors in the form.");
-      return;
-    }
-
-    createDepartmentAdmin(
-      {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        phone_number: formData.phone_number,
-        department_id: formData.department_id,
+  const onSubmit = (data) => {
+    createAdmin(data, {
+      onSuccess: (result) => {
+        toast.success(result?.message || "Department Administrator successfully established.");
+        reset();
       },
-      {
-        onSuccess: (data) => {
-          toast.success(
-            data?.message || "Department admin created successfully.",
-          );
-          resetForm();
-        },
-        onError: (err) => {
-          const msg =
-            err.message ||
-            messageFromFastApiDetail(err?.data?.detail) ||
-            "Something went wrong.";
-          toast.error(msg);
-          if (err.status === 401) onLogout?.();
-        },
+      onError: (err) => {
+        toast.error(err.message || "Failed to establish administrator account.");
       },
-    );
+    });
   };
 
   return (
     <MainLayout user={user} onLogout={onLogout}>
-      <div className="max-w-3xl mx-auto px-6 py-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-blue-50 rounded-lg">
-            <UserCog className="text-blue-600" size={24} />
+      <div className="p-8 max-w-4xl mx-auto space-y-10 animate-in fade-in duration-700">
+        
+        {/* Header */}
+        <div className="space-y-3 px-2">
+          <div className="w-16 h-16 bg-blue-50 rounded-[2rem] flex items-center justify-center border border-blue-100 shadow-sm mb-4">
+            <UserCog className="text-blue-600 w-8 h-8" />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Users</h1>
-            <p className="text-gray-600">
-              Create department administrators who manage staff and issues for
-              a department.
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-6 mb-8 rounded-xl border border-blue-100 bg-blue-50/80 px-4 py-3 flex gap-3 text-sm text-blue-900">
-          <Info className="shrink-0 mt-0.5" size={18} />
-          <div>
-            <p className="font-medium">Department admins vs. staff</p>
-            <p className="text-blue-800/90 mt-1">
-              Use this form to register a <strong>department admin</strong>{" "}
-              (login + department).{" "}
-              <strong>Field staff</strong> are created by a department admin
-              using <span className="font-medium">Dashboard → Add Staff</span>{" "}
-              — that flow calls{" "}
-              <code className="text-xs bg-blue-100/80 px-1 rounded">
-                POST /employee/add-staff
-              </code>{" "}
-              and assigns the new employee to that admin&apos;s department.
-            </p>
-          </div>
+          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">System Access Control</h1>
+          <p className="text-lg text-gray-500 font-medium max-w-2xl leading-relaxed">
+            Provision new Department Administrators. These users command infrastructure response teams and manage regional personnel.
+          </p>
         </div>
 
         {departmentsError && (
-          <div className="mb-6 flex items-center justify-between gap-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-            <span>Could not load departments.</span>
-            <button
-              type="button"
-              onClick={() => refetchDepartments()}
-              className="font-medium underline"
-            >
-              Retry
-            </button>
+          <div className="p-6 bg-red-50/50 rounded-3xl border border-red-100 flex items-center gap-4 text-red-900 animate-bounce-short">
+            <AlertCircle size={24} className="text-red-500" />
+            <div className="text-sm font-bold">
+              Critical Connection Error: Infrastructure department nodes could not be retrieved. 
+              <span className="block text-xs font-medium text-red-700 mt-1 opacity-80">Security provisioning requires an active department link.</span>
+            </div>
           </div>
         )}
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-6">
-            Create department admin
-          </h2>
+        <div className="bg-white rounded-[3rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)] border border-gray-100/50 p-12 relative">
+          
+          <div className="flex items-center gap-4 mb-10">
+             <div className="p-3 bg-blue-50/50 rounded-2xl">
+               <ShieldAlert className="text-blue-600" size={24} />
+             </div>
+             <h2 className="text-2xl font-black text-gray-900">Administrator Provisioning</h2>
+          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {FIELD_LABELS.name} <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  name="name"
-                  autoComplete="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={inputClass(
-                    errors.name && touched.name,
-                  )}
-                  placeholder={PLACEHOLDERS.name}
-                />
-                <User
-                  className={`absolute left-3 top-2.5 ${
-                    errors.name && touched.name
-                      ? "text-red-400"
-                      : "text-gray-400"
-                  }`}
-                  size={18}
-                />
-              </div>
-              {errors.name && touched.name && (
-                <div className="flex items-center gap-1 mt-1 text-sm text-red-600">
-                  <AlertCircle size={14} />
-                  {errors.name}
-                </div>
-              )}
+          {departmentsLoading ? (
+            <div className="py-24 flex flex-col items-center">
+              <Loader2 className="w-12 h-12 text-blue-200 animate-spin mb-6" />
+              <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">Accessing Department Databases...</p>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {FIELD_LABELS.email} <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="email"
-                  name="email"
-                  autoComplete="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={inputClass(
-                    errors.email && touched.email,
-                  )}
-                  placeholder={PLACEHOLDERS.email}
-                />
-                <Mail
-                  className={`absolute left-3 top-2.5 ${
-                    errors.email && touched.email
-                      ? "text-red-400"
-                      : "text-gray-400"
-                  }`}
-                  size={18}
-                />
-              </div>
-              {errors.email && touched.email && (
-                <div className="flex items-center gap-1 mt-1 text-sm text-red-600">
-                  <AlertCircle size={14} />
-                  {errors.email}
+          ) : (
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Name */}
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-2">Full Legal Designation</label>
+                  <div className="relative group">
+                    <User className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-blue-600 transition-colors" />
+                    <input
+                      {...register("name")}
+                      placeholder="e.g. Ramesh Shrestha"
+                      className={`w-full pl-16 pr-8 py-5 bg-gray-50/80 border-none rounded-3xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all text-lg font-bold text-gray-900 ${errors.name ? 'ring-2 ring-red-100' : ''}`}
+                    />
+                  </div>
+                  {errors.name && <p className="text-red-500 text-[11px] font-bold pl-3">{errors.name.message}</p>}
                 </div>
-              )}
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {FIELD_LABELS.password} <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  autoComplete="new-password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={`${inputClass(
-                    errors.password && touched.password,
-                  )} pr-11`}
-                  placeholder={PLACEHOLDERS.password}
-                />
-                <Lock
-                  className={`absolute left-3 top-2.5 ${
-                    errors.password && touched.password
-                      ? "text-red-400"
-                      : "text-gray-400"
-                  }`}
-                  size={18}
-                />
+                {/* Email */}
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-2">Security Email Node</label>
+                  <div className="relative group">
+                    <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-blue-600 transition-colors" />
+                    <input
+                      {...register("email")}
+                      type="email"
+                      placeholder="ramesh@battinala.gov"
+                      className={`w-full pl-16 pr-8 py-5 bg-gray-50/80 border-none rounded-3xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all text-lg font-bold text-gray-900 ${errors.email ? 'ring-2 ring-red-100' : ''}`}
+                    />
+                  </div>
+                  {errors.email && <p className="text-red-500 text-[11px] font-bold pl-3">{errors.email.message}</p>}
+                </div>
+
+                {/* Password */}
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-2">Security Passcode</label>
+                  <div className="relative group">
+                    <Lock className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-blue-600 transition-colors" />
+                    <input
+                      {...register("password")}
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      className={`w-full pl-16 pr-16 py-5 bg-gray-50/80 border-none rounded-3xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all text-lg font-bold text-gray-900 ${errors.password ? 'ring-2 ring-red-100' : ''}`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-300 hover:text-blue-600 transition-colors"
+                    >
+                      {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+                    </button>
+                  </div>
+                  {errors.password && <p className="text-red-500 text-[11px] font-bold pl-3">{errors.password.message}</p>}
+                </div>
+
+                {/* Phone */}
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-2">Registry Contact</label>
+                  <div className="relative group">
+                    <Phone className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-blue-600 transition-colors" />
+                    <input
+                      {...register("phone_number")}
+                      placeholder="9841234567"
+                      className={`w-full pl-16 pr-8 py-5 bg-gray-50/80 border-none rounded-3xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all text-lg font-bold text-gray-900 ${errors.phone_number ? 'ring-2 ring-red-100' : ''}`}
+                    />
+                  </div>
+                  {errors.phone_number && <p className="text-red-500 text-[11px] font-bold pl-3">{errors.phone_number.message}</p>}
+                </div>
+              </div>
+
+              {/* Department Select */}
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-2">Command Sector Assignment</label>
+                <div className="relative group">
+                  <Building2 className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-blue-600 transition-colors pointer-events-none" />
+                  <select
+                    {...register("department_id")}
+                    disabled={departments.length === 0}
+                    className={`w-full pl-16 pr-8 py-5 bg-gray-50/80 border-none rounded-3xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:bg-white transition-all text-lg font-bold text-gray-900 appearance-none disabled:opacity-50 ${errors.department_id ? 'ring-2 ring-red-100' : ''}`}
+                  >
+                    <option value="">Select Department Node</option>
+                    {departments.map(d => (
+                      <option key={d.department_id} value={d.department_id}>{d.department_name}</option>
+                    ))}
+                  </select>
+                </div>
+                {errors.department_id && <p className="text-red-500 text-[11px] font-bold pl-3">{errors.department_id.message}</p>}
+                {departments.length === 0 && !departmentsLoading && !departmentsError && (
+                   <p className="text-xs font-bold text-amber-600 p-4 bg-amber-50 rounded-2xl flex items-center gap-3">
+                     <AlertCircle size={16} />
+                     Access Denied: No available departmental nodes. Establish a department before provisioning admins.
+                   </p>
+                )}
+              </div>
+
+              <div className="pt-6 border-t border-gray-50">
                 <button
-                  type="button"
-                  tabIndex={-1}
-                  onClick={() => setShowPassword((p) => !p)}
-                  className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  type="submit"
+                  disabled={creating || departmentsLoading}
+                  className="w-full flex items-center justify-center gap-4 py-6 bg-blue-600 text-white rounded-[2rem] font-black text-xl tracking-wider hover:bg-blue-700 hover:shadow-2xl hover:shadow-blue-100 active:scale-[0.98] transition-all disabled:opacity-50 group"
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {creating ? (
+                    <Loader2 className="w-8 h-8 animate-spin" />
+                  ) : (
+                    <>
+                      <CheckCircle size={24} className="group-hover:scale-110 transition-transform" />
+                      Provision Administrator
+                    </>
+                  )}
                 </button>
               </div>
-              {errors.password && touched.password && (
-                <div className="flex items-center gap-1 mt-1 text-sm text-red-600">
-                  <AlertCircle size={14} />
-                  {errors.password}
-                </div>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {FIELD_LABELS.phone_number}{" "}
-                <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  name="phone_number"
-                  autoComplete="tel"
-                  value={formData.phone_number}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={inputClass(
-                    errors.phone_number && touched.phone_number,
-                  )}
-                  placeholder={PLACEHOLDERS.phone_number}
-                />
-                <Phone
-                  className={`absolute left-3 top-2.5 ${
-                    errors.phone_number && touched.phone_number
-                      ? "text-red-400"
-                      : "text-gray-400"
-                  }`}
-                  size={18}
-                />
-              </div>
-              {errors.phone_number && touched.phone_number && (
-                <div className="flex items-center gap-1 mt-1 text-sm text-red-600">
-                  <AlertCircle size={14} />
-                  {errors.phone_number}
-                </div>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {FIELD_LABELS.department_id}{" "}
-                <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <select
-                  name="department_id"
-                  value={formData.department_id}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  disabled={departmentsLoading || departments.length === 0}
-                  className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none bg-white ${
-                    errors.department_id && touched.department_id
-                      ? "border-red-500 focus:ring-red-500"
-                      : "border-gray-300"
-                  }`}
-                >
-                  <option value="">
-                    {departmentsLoading
-                      ? "Loading departments…"
-                      : PLACEHOLDERS.department_id}
-                  </option>
-                  {departments.map((d) => (
-                    <option
-                      key={d.department_id}
-                      value={String(d.department_id)}
-                    >
-                      {d.department_name}
-                    </option>
-                  ))}
-                </select>
-                <Building2
-                  className={`absolute left-3 top-2.5 pointer-events-none ${
-                    errors.department_id && touched.department_id
-                      ? "text-red-400"
-                      : "text-gray-400"
-                  }`}
-                  size={18}
-                />
-              </div>
-              {errors.department_id && touched.department_id && (
-                <div className="flex items-center gap-1 mt-1 text-sm text-red-600">
-                  <AlertCircle size={14} />
-                  {errors.department_id}
-                </div>
-              )}
-              {!departmentsLoading && departments.length === 0 && !departmentsError && (
-                <p className="mt-2 text-sm text-amber-700">
-                  No departments yet. Create departments first under{" "}
-                  <Link
-                    to="/superadmin/departments"
-                    className="font-medium underline"
-                  >
-                    Departments
-                  </Link>
-                  .
-                </p>
-              )}
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <button
-                type="submit"
-                disabled={
-                  isPending ||
-                  departmentsLoading ||
-                  departments.length === 0
-                }
-                className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-              >
-                {isPending ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Creating…
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle size={18} />
-                    Create department admin
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
+            </form>
+          )}
         </div>
       </div>
     </MainLayout>
   );
-};
-
-export default UsersPage;
+}
