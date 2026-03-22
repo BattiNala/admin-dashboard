@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 
@@ -18,14 +18,7 @@ import ResponseAnalyticsPage from "@/pages/analytics/ResponseAnalyticsPage";
 import { clearAuth, loadAuth } from "@/utils/authStorage";
 
 function App() {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const storedUser = loadAuth();
-    if (storedUser) {
-      setUser(storedUser);
-    }
-  }, []);
+  const [user, setUser] = useState(() => loadAuth());
 
   const handleLogout = () => {
     clearAuth();

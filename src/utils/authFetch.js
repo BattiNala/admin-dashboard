@@ -1,6 +1,8 @@
 import { loadAuth, updateTokens } from "@/utils/authStorage";
+import { resolveApiUrl } from "@/utils/apiUrl";
 
-const DEFAULT_REFRESH_ENDPOINT = "/api/v1/auth/refresh";
+/** Must use `/api/...` so Vite dev/preview proxy forwards to the backend (see vite.config.js). */
+const DEFAULT_REFRESH_ENDPOINT = "/api/auth/refresh";
 
 const prepareInit = (init = {}) => {
   const headers = new Headers(init.headers || {});
@@ -22,8 +24,9 @@ export const authFetch = async (
   init = {},
   { refreshEndpoint = DEFAULT_REFRESH_ENDPOINT } = {}
 ) => {
+  const url = typeof input === "string" ? resolveApiUrl(input) : input;
   const baseInit = prepareInit(init);
-  const response = await fetch(input, baseInit);
+  const response = await fetch(url, baseInit);
   if (response.status !== 401) {
     return response;
   }
@@ -33,7 +36,7 @@ export const authFetch = async (
     return response;
   }
 
-  const refreshResponse = await fetch(refreshEndpoint, {
+  const refreshResponse = await fetch(resolveApiUrl(refreshEndpoint), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -58,5 +61,5 @@ export const authFetch = async (
   });
 
   const retryInit = prepareInit(init);
-  return fetch(input, retryInit);
+  return fetch(url, retryInit);
 };

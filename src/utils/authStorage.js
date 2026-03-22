@@ -10,6 +10,10 @@ export const saveAuth = ({
   refresh_token,
   role_name,
   is_verified,
+  name,
+  username,
+  department_id,
+  department_name,
 }) => {
   if (!canUseStorage()) return null;
   if (!access_token || !refresh_token) return null;
@@ -24,6 +28,16 @@ export const saveAuth = ({
     refresh_expires_at: now + REFRESH_TTL_MS,
     stored_at: now,
   };
+
+  if (name != null && name !== "") payload.name = name;
+  if (username != null && username !== "") payload.username = username;
+  if (department_id != null && department_id !== "") {
+    const n = Number(department_id);
+    if (!Number.isNaN(n)) payload.department_id = n;
+  }
+  if (department_name != null && department_name !== "") {
+    payload.department_name = department_name;
+  }
 
   window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(payload));
   return payload;
@@ -89,6 +103,13 @@ export const loadAuth = () => {
     return {
       ...data,
       role: data.role_name || data.role,
+      name:
+        data.name ||
+        data.full_name ||
+        data.username ||
+        undefined,
+      department_name: data.department_name || undefined,
+      department_id: data.department_id ?? undefined,
     };
   } catch (error) {
     clearAuth();

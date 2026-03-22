@@ -88,17 +88,31 @@ const LoginCard = ({ setUser, accessDenied = false }) => {
           const roleName = data?.role_name || data?.role || "";
           const isAllowedRole =
             roleName === "superadmin" || roleName === "department_admin";
+          const dept = data?.department;
+          const departmentId =
+            data?.department_id ?? dept?.department_id ?? dept?.id;
+          const departmentName =
+            data?.department_name ?? dept?.department_name ?? dept?.name ?? "";
+          const displayName =
+            data?.full_name ?? data?.name ?? data?.username ?? "";
           const storedAuth = saveAuth({
             access_token: data?.access_token,
             refresh_token: data?.refresh_token,
             role_name: roleName,
             is_verified: data?.is_verified,
+            name: displayName,
+            username: data?.username,
+            department_id: departmentId,
+            department_name: departmentName || undefined,
           });
           if (setUser) {
             setUser({
               ...data,
               ...(storedAuth || {}),
               role: roleName,
+              name: displayName || undefined,
+              department_id: departmentId,
+              department_name: departmentName || undefined,
             });
           }
           if (isAllowedRole) {

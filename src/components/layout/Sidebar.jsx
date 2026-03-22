@@ -61,16 +61,24 @@ export default function Sidebar({ user, onLogout }) {
       <div className="p-6 border-t border-gray-200 mt-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-medium">
-              {user?.name?.charAt(0) || "A"}
+            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-medium uppercase">
+              {(user?.name || user?.username || "A").charAt(0)}
             </div>
-            <div>
-              <p className="text-sm font-medium text-gray-900">
-                {user?.name || "Admin User"}
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {user?.name || user?.username || "Admin User"}
               </p>
               <p className="text-xs text-gray-500">
                 {user?.role === "superadmin" ? "Super Admin" : "Department Admin"}
               </p>
+              {user?.role === "department_admin" && user?.department_name && (
+                <p
+                  className="text-xs text-gray-400 truncate max-w-[11rem]"
+                  title={user.department_name}
+                >
+                  {user.department_name}
+                </p>
+              )}
             </div>
           </div>
 

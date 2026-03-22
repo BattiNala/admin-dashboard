@@ -1,9 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
+import { resolveApiUrl } from "@/utils/apiUrl";
 
 export const useLoginUser = () => {
     return useMutation({
         mutationFn: async ({ username, password }) => {
-            const response = await fetch("/api/auth/login", {
+            const response = await fetch(resolveApiUrl("/api/auth/login"), {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

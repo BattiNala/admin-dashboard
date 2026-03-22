@@ -3,6 +3,16 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
+/** Same proxy for `npm run dev` and `npm run preview` so `/api/*` always reaches FastAPI. */
+const apiProxy = {
+  "/api": {
+    target: "http://localhost:8000/api/v1",
+    changeOrigin: true,
+    secure: false,
+    rewrite: (reqPath) => reqPath.replace(/^\/api/, ""),
+  },
+};
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
 
@@ -22,13 +32,10 @@ export default defineConfig({
   },
 
   server: {
-    proxy: {
-      "/api": {
-        target: "http://localhost:8000/api/v1",
-        changeOrigin: true,
-        secure: false,
-        rewrite: (path) => path.replace(/^\/api/, ""),
-      },
-    },
+    proxy: { ...apiProxy },
+  },
+
+  preview: {
+    proxy: { ...apiProxy },
   },
 });
