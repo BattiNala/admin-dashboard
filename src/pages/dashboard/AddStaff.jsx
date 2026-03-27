@@ -48,32 +48,36 @@ export default function AddStaffPage({ user, onLogout }) {
         onError: (error) => {
           toast.error(error.message || "Failed to register personnel.");
         },
-      }
+      },
     );
   };
 
   return (
     <MainLayout user={user} onLogout={onLogout}>
       <div className="p-8 max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <div className="flex items-center justify-between">
-          <Link 
-            to="/dashboard/staff" 
+        {/* <div className="flex items-center justify-between">
+          <Link
+            to="/dashboard/staff"
             className="group flex items-center gap-2 text-gray-400 hover:text-blue-600 font-bold text-xs uppercase tracking-widest transition-all"
           >
-            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft
+              size={16}
+              className="group-hover:-translate-x-1 transition-transform"
+            />
             Back to Registry
           </Link>
-        </div>
+        </div> */}
 
         <div>
-           <div className="w-16 h-16 bg-blue-600 rounded-3xl flex items-center justify-center shadow-xl shadow-blue-200 mb-6">
+          {/* <div className="w-16 h-16 bg-blue-600 rounded-3xl flex items-center justify-center shadow-xl shadow-blue-200 mb-6">
              <UserPlus className="w-8 h-8 text-white" />
-           </div>
-          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
-            Register Personnel
+           </div> */}
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+            Register Staff 
           </h1>
           <p className="mt-2 text-lg text-gray-500 font-medium">
-            Onboard new response staff for active dispatch across municipal sectors.
+            Create new response staff for active dispatch across municipal
+            sectors.
           </p>
         </div>
 
@@ -89,10 +93,14 @@ export default function AddStaffPage({ user, onLogout }) {
               </label>
               <input
                 {...register("name")}
-                className={`w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:bg-white transition-all text-lg font-medium text-gray-900 placeholder:text-gray-300 ${errors.name ? 'ring-2 ring-red-500/20 bg-red-50/20' : ''}`}
+                className={`w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:bg-white transition-all text-lg font-medium text-gray-900 placeholder:text-gray-300 ${errors.name ? "ring-2 ring-red-500/20 bg-red-50/20" : ""}`}
                 placeholder="e.g. Ramesh Shrestha"
               />
-              {errors.name && <p className="text-red-500 text-xs font-bold pl-1">{errors.name.message}</p>}
+              {errors.name && (
+                <p className="text-red-500 text-xs font-bold pl-1">
+                  {errors.name.message}
+                </p>
+              )}
             </div>
 
             {/* Email */}
@@ -103,14 +111,18 @@ export default function AddStaffPage({ user, onLogout }) {
               <input
                 {...register("email")}
                 type="email"
-                className={`w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:bg-white transition-all text-lg font-medium text-gray-900 placeholder:text-gray-300 ${errors.email ? 'ring-2 ring-red-500/20 bg-red-50/20' : ''}`}
+                className={`w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:bg-white transition-all text-lg font-medium text-gray-900 placeholder:text-gray-300 ${errors.email ? "ring-2 ring-red-500/20 bg-red-50/20" : ""}`}
                 placeholder="ramesh@battinala.gov"
               />
-              {errors.email && <p className="text-red-500 text-xs font-bold pl-1">{errors.email.message}</p>}
+              {errors.email && (
+                <p className="text-red-500 text-xs font-bold pl-1">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               {/* Phone */}
+              {/* Phone */}
               <div className="space-y-2">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">
                   Contact Number
@@ -122,7 +134,7 @@ export default function AddStaffPage({ user, onLogout }) {
                 />
               </div>
 
-               {/* Status */}
+              {/* Status */}
               <div className="space-y-2">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">
                   Current Status
@@ -141,7 +153,7 @@ export default function AddStaffPage({ user, onLogout }) {
             {/* Team Dropdown */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">
-                Team Unit Assignment
+                Team Assignment
               </label>
               <div className="relative">
                 <select
@@ -149,10 +161,10 @@ export default function AddStaffPage({ user, onLogout }) {
                   disabled={loadingTeams}
                   className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:bg-white appearance-none transition-all text-lg font-medium text-gray-900 disabled:opacity-50"
                 >
-                  <option value="">No Initial Assignment (Floating)</option>
+                  <option value="">Select Team</option>
                   {teams.map((team) => (
                     <option key={team.team_id} value={team.team_id}>
-                      {team.team_name} (ID: {team.team_id})
+                      {team.team_name} 
                     </option>
                   ))}
                 </select>
