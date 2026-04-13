@@ -3,7 +3,8 @@ const AUTH_STORAGE_KEY = "admin-dashboard-auth";
 const ACCESS_TTL_MS = 23.5 * 60 * 60 * 1000;
 const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
-const canUseStorage = () => typeof window !== "undefined" && !!window.localStorage;
+const canUseStorage = () =>
+  typeof window !== "undefined" && !!window.localStorage;
 
 export const saveAuth = ({
   access_token,
@@ -100,14 +101,21 @@ export const loadAuth = () => {
       return null;
     }
 
+    // Ensure access_token is properly trimmed and included
+    const accessToken = (data.access_token || "").trim();
+    if (!accessToken) {
+      clearAuth();
+      return null;
+    }
+
     return {
       ...data,
-      role: data.role_name || data.role,
-      name:
-        data.name ||
-        data.full_name ||
-        data.username ||
-        undefined,
+      access_token: accessToken,
+      refresh_token: (data.refresh_token || "").trim(),
+      role: (data.role_name || data.role || "")
+        .toLowerCase()
+        .replace(/\s+/g, "_"),
+      name: data.name || data.full_name || data.username || undefined,
       department_name: data.department_name || undefined,
       department_id: data.department_id ?? undefined,
     };

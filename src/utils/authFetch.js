@@ -6,9 +6,11 @@ const DEFAULT_REFRESH_ENDPOINT = "/api/auth/refresh";
 const prepareInit = (init = {}) => {
   const headers = new Headers(init.headers || {});
   if (!headers.has("Authorization")) {
-    const token = loadAuth()?.access_token;
+    const auth = loadAuth();
+    const token = auth?.access_token;
     if (token) {
-      headers.set("Authorization", `Bearer ${token}`);
+      const authHeader = `Bearer ${token}`;
+      headers.set("Authorization", authHeader);
     }
   }
 
@@ -21,11 +23,18 @@ const prepareInit = (init = {}) => {
 export const authFetch = async (
   input,
   init = {},
-  { refreshEndpoint = DEFAULT_REFRESH_ENDPOINT } = {}
+  { refreshEndpoint = DEFAULT_REFRESH_ENDPOINT } = {},
 ) => {
   const url = typeof input === "string" ? resolveApiUrl(input) : input;
   const baseInit = prepareInit(init);
-  const response = await fetch(url, baseInit);
+
+  // Convert Headers to plain object for better compatibility
+  const fetchInit = {
+    ...baseInit,
+    headers: Object.fromEntries(baseInit.headers.entries()),
+  };
+
+  const response = await fetch(url, fetchInit);
   if (response.status !== 401) {
     return response;
   }

@@ -7,6 +7,7 @@ import SuperAdminDashboardPage from "@/pages/superadmin/SuperAdminDashboardPage"
 import RolesPage from "@/pages/superadmin/RolesPage";
 import DepartmentsPage from "@/pages/superadmin/DepartmentsPage";
 import UsersPage from "@/pages/superadmin/UsersPage";
+import EmployeesPage from "@/pages/superadmin/EmployeesPage";
 import DepartmentDashboardPage from "@/pages/dashboard/DepartmentDashboardPage";
 import TeamList from "@/pages/dashboard/Teamlist";
 import StaffList from "@/pages/dashboard/Stafflist";
@@ -101,6 +102,14 @@ function App() {
             element={
               <RequireSuperAdmin user={user}>
                 <UsersPage user={user} onLogout={handleLogout} />
+              </RequireSuperAdmin>
+            }
+          />
+          <Route
+            path="/superadmin/employees"
+            element={
+              <RequireSuperAdmin user={user}>
+                <EmployeesPage user={user} onLogout={handleLogout} />
               </RequireSuperAdmin>
             }
           />

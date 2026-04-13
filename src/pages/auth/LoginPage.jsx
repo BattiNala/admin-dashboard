@@ -39,7 +39,10 @@ export default function LoginPage({ setUser, accessDenied = false }) {
       },
       {
         onSuccess: (data) => {
-          const roleName = data?.role_name || data?.role || "";
+          let roleName = data?.role_name || data?.role || "";
+          // Normalize role: convert to lowercase and replace spaces with underscores
+          roleName = roleName.toLowerCase().replace(/\s+/g, "_");
+
           const isAllowed =
             roleName === "superadmin" || roleName === "department_admin";
 

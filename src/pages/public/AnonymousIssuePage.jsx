@@ -1,65 +1,73 @@
 import React, { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { resolveApiUrl } from "@/utils/apiUrl";
-import { Camera, CheckCircle2, Loader2, MapPin, Trash2 } from "lucide-react";
+import {
+  Camera,
+  CheckCircle2,
+  Loader2,
+  MapPin,
+  Trash2,
+  Upload,
+} from "lucide-react";
+import { useCamera } from "@/hooks/useCamera";
+import { useGeolocation } from "@/hooks/useGeolocation";
+import {
+  fetchIssueEndpoint,
+  dataURItoBlob,
+  parseBackendError,
+} from "@/utils/anonymousIssueUtils";
+import {
+  IssueTypeField,
+  PriorityField,
+  LocationField,
+  ContactNumberField,
+  DescriptionField,
+  PhotoGallery,
+  SuccessMessage,
+} from "@/components/anonymous-issue/FormFields";
 
-const initialForm = {
+const INITIAL_FORM = {
   issue_type: "",
-  location: "",
+  issue_priority: "NORMAL",
+  issue_location: "",
   description: "",
+  contact_no: "",
+  latitude: "",
+  longitude: "",
 };
 
-const fetchIssueEndpoint = async (path, init = {}) => {
-  const candidates = [
-    resolveApiUrl(`/api/issue/${path}`),
-    resolveApiUrl(`/api/issues/${path}`),
-  ];
-
-  let lastError = null;
-
-  for (const url of candidates) {
-    try {
-      const response = await fetch(url, init);
-      if (response.ok || response.status !== 404) {
-        return response;
-      }
-      lastError = new Error(`Endpoint not found: ${url}`);
-    } catch (error) {
-      lastError = error;
-    }
-  }
-
-  throw lastError || new Error("Issue endpoint request failed");
-};
+const PRIORITY_OPTIONS = ["LOW", "NORMAL", "HIGH"];
 
 function AnonymousIssuePage() {
-  const videoRef = useRef(null);
-  const streamRef = useRef(null);
+  const fileInputRef = useRef(null);
   const previewUrlsRef = useRef([]);
 
-  const [form, setForm] = useState(initialForm);
+  // Use custom hooks
+  const {
+    videoRef,
+    streamRef,
+    cameraReady,
+    cameraError,
+    isCapturing,
+    setCameraError,
+    initializeCamera,
+    capturePhoto: capturePhotoFromCamera,
+    stopCamera,
+  } = useCamera();
+
+  const { gpsLoading, gpsError, setGpsError, useCurrentLocation } =
+    useGeolocation();
+
+  // Form state
+  const [form, setForm] = useState(INITIAL_FORM);
   const [issueTypes, setIssueTypes] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [loadingTypes, setLoadingTypes] = useState(false);
   const [typeError, setTypeError] = useState("");
   const [errors, setErrors] = useState({});
   const [photos, setPhotos] = useState([]);
-  const [cameraOpen, setCameraOpen] = useState(false);
-  const [cameraError, setCameraError] = useState("");
-  const [gpsLoading, setGpsLoading] = useState(false);
-  const [gpsError, setGpsError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(null);
-
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-    setCameraOpen(false);
-  };
 
   useEffect(() => {
     return () => {
@@ -84,16 +92,21 @@ function AnonymousIssuePage() {
           throw new Error(data?.detail || "Failed to load issue types");
         }
 
+        // Extract types and map with index-based IDs
         const types = Array.isArray(data?.types)
           ? data.types
-              .map((item) => {
-                if (typeof item === "string") return item;
-                return item?.issue_type || item?.name || item?.label || "";
+              .map((item, idx) => {
+                const typeName =
+                  typeof item === "string"
+                    ? item
+                    : item?.issue_type || item?.name || item?.label || "";
+                return typeName ? { id: idx + 1, name: typeName } : null;
               })
               .filter(Boolean)
           : [];
 
-        setIssueTypes(types);
+        setDepartments(types);
+        setIssueTypes(types.map((t) => t.name));
       } catch (error) {
         console.error("Issue types load error:", error);
         setTypeError("Unable to load issue types right now.");
@@ -106,131 +119,45 @@ function AnonymousIssuePage() {
     loadIssueTypes();
   }, []);
 
-  const startCamera = async () => {
+  // ========================================================================
+  // CAMERA & PHOTO FUNCTIONS
+  // ========================================================================
+
+  const handleCameraClick = async () => {
     setCameraError("");
 
-    if (!navigator.mediaDevices?.getUserMedia) {
-      setCameraError("Live camera is not supported by this browser.");
-      return false;
-    }
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-        audio: false,
-      });
-
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+    if (!cameraReady) {
+      // Initialize camera
+      const success = await initializeCamera();
+      if (!success) {
+        return;
       }
-      setCameraOpen(true);
-      return true;
-    } catch (error) {
-      console.error("Camera start error:", error);
-      setCameraError("Camera permission was denied or unavailable.");
-      return false;
+    } else {
+      // Capture photo
+      const photoData = await capturePhotoFromCamera();
+      if (photoData) {
+        setPhotos((current) => [...current, photoData]);
+        setErrors((current) => ({ ...current, photos: "" }));
+        // Keep camera open for next photo
+      }
     }
   };
 
-  const capturePhoto = () => {
-    const video = videoRef.current;
-    if (!video || !video.videoWidth || !video.videoHeight) {
-      toast.error("Open live camera first.");
-      return false;
-    }
+  // ========================================================================
+  // FILE FUNCTIONS
+  // ========================================================================
 
-    const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const context = canvas.getContext("2d");
-
-    if (!context) {
-      toast.error("Unable to capture photo.");
-      return false;
-    }
-
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
-    const blob = dataURItoBlob(dataUrl);
-    if (!blob) {
-      toast.error("Failed to create image.");
-      return false;
-    }
-
-    const file = new File([blob], `issue-${Date.now()}.jpg`, {
-      type: "image/jpeg",
+  // Wrapper to handle GPS location and update form
+  const handleUseCurrentLocation = () => {
+    useCurrentLocation(({ latitude, longitude, issue_location }) => {
+      setForm((current) => ({
+        ...current,
+        latitude,
+        longitude,
+        issue_location,
+      }));
+      setErrors((current) => ({ ...current, issue_location: "" }));
     });
-    const previewUrl = URL.createObjectURL(file);
-    previewUrlsRef.current.push(previewUrl);
-    setPhotos((current) => [...current, { file, previewUrl }]);
-    setErrors((current) => ({ ...current, photos: "" }));
-    toast.success("Photo captured.");
-    return true;
-  };
-
-  const dataURItoBlob = (dataURI) => {
-    try {
-      const parts = dataURI.split(",");
-      const byteString = atob(parts[1]);
-      const mimeString = parts[0].split(":")[1].split(";")[0];
-      const ab = new ArrayBuffer(byteString.length);
-      const ia = new Uint8Array(ab);
-      for (let i = 0; i < byteString.length; i += 1) {
-        ia[i] = byteString.charCodeAt(i);
-      }
-      return new Blob([ab], { type: mimeString });
-    } catch {
-      return null;
-    }
-  };
-
-  const handleCameraAction = () => {
-    setCameraError("");
-    if (!cameraOpen) {
-      startCamera();
-      return;
-    }
-
-    const ok = capturePhoto();
-    if (ok) {
-      stopCamera();
-    }
-  };
-
-  const useCurrentLocation = () => {
-    setGpsError("");
-
-    if (!navigator.geolocation) {
-      setGpsError("GPS location is not supported by this browser.");
-      return;
-    }
-
-    setGpsLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const latitude = position.coords.latitude.toFixed(6);
-        const longitude = position.coords.longitude.toFixed(6);
-        setForm((current) => ({
-          ...current,
-          location: `Current location: ${latitude}, ${longitude}`,
-        }));
-        setErrors((current) => ({ ...current, location: "" }));
-        setGpsLoading(false);
-        toast.success("Current location added.");
-      },
-      (error) => {
-        console.error("GPS error:", error);
-        setGpsError("Unable to read your current location.");
-        setGpsLoading(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      },
-    );
   };
 
   const removePhoto = (index) => {
@@ -247,8 +174,34 @@ function AnonymousIssuePage() {
     });
   };
 
+  const handleFileSelect = (event) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    for (let i = 0; i < files.length; i += 1) {
+      const file = files[i];
+      if (!file.type.startsWith("image/")) {
+        toast.error(
+          `${file.name} is not an image. Please select image files only.`,
+        );
+        continue;
+      }
+
+      const previewUrl = URL.createObjectURL(file);
+      previewUrlsRef.current.push(previewUrl);
+      setPhotos((current) => [...current, { file, previewUrl }]);
+      toast.success(`${file.name} added.`);
+    }
+
+    setErrors((current) => ({ ...current, photos: "" }));
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const resetForm = () => {
-    setForm(initialForm);
+    setForm(INITIAL_FORM);
     setErrors({});
     setSuccess(null);
     photos.forEach(({ previewUrl }) => URL.revokeObjectURL(previewUrl));
@@ -256,6 +209,7 @@ function AnonymousIssuePage() {
     setPhotos([]);
     stopCamera();
     setCameraError("");
+    setGpsError("");
   };
 
   const handleChange = (event) => {
@@ -268,10 +222,12 @@ function AnonymousIssuePage() {
     const nextErrors = {};
     if (!form.issue_type.trim())
       nextErrors.issue_type = "Please select an issue type.";
-    if (form.location.trim().length < 3)
-      nextErrors.location = "Enter a valid location.";
-    if (form.description.trim().length < 10)
-      nextErrors.description = "Describe the issue in at least 10 characters.";
+    if (form.issue_location.trim().length < 3)
+      nextErrors.issue_location = "Enter a valid location.";
+    if (form.contact_no.trim().length < 10)
+      nextErrors.contact_no = "Enter a valid contact number.";
+    if (!form.latitude || !form.longitude)
+      nextErrors.gps = "Please use GPS to capture your location.";
     if (photos.length === 0)
       nextErrors.photos = "Capture at least one photo using the camera.";
     return nextErrors;
@@ -291,11 +247,25 @@ function AnonymousIssuePage() {
     setSuccess(null);
 
     try {
+      // Find the department ID for the selected issue type name
+      const selectedDept = departments.find((d) => d.name === form.issue_type);
+      const issueTypeId = selectedDept?.id;
+
+      if (!issueTypeId) {
+        throw new Error("Invalid issue type selected");
+      }
+
       const payload = {
-        issue_type: form.issue_type.trim(),
-        location: form.location.trim(),
+        issue_type: issueTypeId,
+        issue_priority: form.issue_priority,
+        issue_location: form.issue_location.trim(),
         description: form.description.trim(),
+        contact_no: form.contact_no.trim(),
+        latitude: parseFloat(form.latitude),
+        longitude: parseFloat(form.longitude),
       };
+
+      console.log("Submitting payload:", JSON.stringify(payload, null, 2));
 
       const formData = new FormData();
       formData.append("issue_create", JSON.stringify(payload));
@@ -309,10 +279,15 @@ function AnonymousIssuePage() {
       });
 
       const data = await response.json().catch(() => ({}));
+      console.log("Backend response:", data, "Status:", response.status);
+
       if (!response.ok) {
-        throw new Error(
-          data?.detail || data?.message || "Failed to submit issue",
-        );
+        const errorDetail = Array.isArray(data?.detail)
+          ? data.detail
+              .map((err) => `${err.loc?.join(".")}: ${err.msg}`)
+              .join(", ")
+          : data?.detail || data?.message || "Failed to submit issue";
+        throw new Error(errorDetail);
       }
 
       setSuccess(data);
@@ -366,12 +341,34 @@ function AnonymousIssuePage() {
               <div className="flex items-center justify-between gap-3">
                 <button
                   type="button"
-                  onClick={handleCameraAction}
-                  className="inline-flex items-center gap-2 rounded-full bg-linear-to-r from-blue-700 to-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-200/50"
+                  onClick={handleCameraClick}
+                  disabled={isCapturing}
+                  className="inline-flex items-center gap-2 rounded-full bg-linear-to-r from-blue-700 to-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-200/50 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   <Camera size={16} />
-                  {cameraOpen ? "Capture live photo" : "Open live camera"}
+                  {isCapturing
+                    ? "Capturing..."
+                    : cameraReady
+                      ? "Capture Photo"
+                      : "Open Camera"}
                 </button>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="inline-flex items-center gap-2 rounded-full border-2 border-blue-700 bg-white px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50"
+                >
+                  <Upload size={16} />
+                  Upload image
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  aria-label="Upload images"
+                />
               </div>
 
               {cameraError ? (
@@ -386,7 +383,7 @@ function AnonymousIssuePage() {
               ) : null}
 
               <div className="mt-4 overflow-hidden rounded-[1.5rem] border border-blue-100 bg-black">
-                {cameraOpen ? (
+                {cameraReady ? (
                   <video
                     ref={videoRef}
                     autoPlay
@@ -396,8 +393,7 @@ function AnonymousIssuePage() {
                   />
                 ) : (
                   <div className="flex aspect-4/3 items-center justify-center bg-slate-900 px-4 text-center text-sm text-slate-300">
-                    Live camera opens here. Tap the button once to open camera,
-                    and again to capture.
+                    Click "Open Camera" to take a photo.
                   </div>
                 )}
               </div>
@@ -495,19 +491,35 @@ function AnonymousIssuePage() {
 
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  Priority <span className="text-red-500">*</span>
+                </label>
+                <select
+                  name="issue_priority"
+                  value={form.issue_priority}
+                  onChange={handleChange}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:ring-4 focus:ring-blue-100"
+                >
+                  <option value="LOW">Low</option>
+                  <option value="NORMAL">Normal</option>
+                  <option value="HIGH">High</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
                   Location <span className="text-red-500">*</span>
                 </label>
                 <div className="space-y-3">
                   <input
-                    name="location"
-                    value={form.location}
+                    name="issue_location"
+                    value={form.issue_location}
                     onChange={handleChange}
-                    placeholder="e.g. Thamel, Kathmandu or use GPS"
-                    className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-4 focus:ring-blue-100 ${errors.location ? "border-red-300 bg-red-50/40" : "border-slate-200 bg-white"}`}
+                    placeholder="e.g. Main Street near 5th Avenue or use GPS"
+                    className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-4 focus:ring-blue-100 ${errors.issue_location ? "border-red-300 bg-red-50/40" : "border-slate-200 bg-white"}`}
                   />
                   <button
                     type="button"
-                    onClick={useCurrentLocation}
+                    onClick={handleUseCurrentLocation}
                     disabled={gpsLoading}
                     className="inline-flex items-center gap-2 rounded-full bg-linear-to-r from-blue-700 to-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-200/50 disabled:cursor-not-allowed disabled:opacity-60"
                   >
@@ -522,16 +534,35 @@ function AnonymousIssuePage() {
                     {gpsError}
                   </p>
                 ) : null}
-                {errors.location ? (
+                {errors.issue_location ? (
                   <p className="mt-2 text-xs font-medium text-red-600">
-                    {errors.location}
+                    {errors.issue_location}
                   </p>
                 ) : null}
               </div>
 
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700">
-                  Description <span className="text-red-500">*</span>
+                  Contact Number <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  name="contact_no"
+                  value={form.contact_no}
+                  onChange={handleChange}
+                  placeholder="e.g. 9801234567"
+                  className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition focus:ring-4 focus:ring-blue-100 ${errors.contact_no ? "border-red-300 bg-red-50/40" : "border-slate-200 bg-white"}`}
+                />
+                {errors.contact_no ? (
+                  <p className="mt-2 text-xs font-medium text-red-600">
+                    {errors.contact_no}
+                  </p>
+                ) : null}
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  Description
                 </label>
                 <textarea
                   name="description"

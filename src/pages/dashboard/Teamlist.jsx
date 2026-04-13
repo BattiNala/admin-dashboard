@@ -19,29 +19,24 @@ export default function TeamList({ user, onLogout }) {
     return teams.filter(
       (team) =>
         (team.team_name || "").toLowerCase().includes(term) ||
-        (team.department_name || "").toLowerCase().includes(term)
+        (team.department_name || "").toLowerCase().includes(term),
     );
   }, [teams, searchTerm]);
 
   return (
     <MainLayout user={user} onLogout={onLogout}>
-      <div className="p-8 max-w-[1600px] mx-auto space-y-10 animate-in fade-in duration-700">
-        
+      <div className="p-8 max-w-400 mx-auto space-y-10 animate-in fade-in duration-700">
         {/* Unified Header Style */}
         <TeamHeader />
 
         {/* Unified Table Container with improved shadow/rounding */}
         <div className="bg-white rounded-[3rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)] border border-gray-100/50 overflow-hidden ring-1 ring-black/5 hover:shadow-2xl hover:shadow-blue-50/50 transition-all duration-500">
-          
-          <TeamFilters 
-            searchTerm={searchTerm} 
-            onSearchChange={setSearchTerm} 
-          />
+          <TeamFilters searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
-          <TeamTable 
-            data={filteredTeams} 
-            isLoading={isLoading} 
-            isError={isError} 
+          <TeamTable
+            data={filteredTeams}
+            isLoading={isLoading}
+            isError={isError}
           />
 
           {/* Registry Footnote */}
@@ -56,7 +51,6 @@ export default function TeamList({ user, onLogout }) {
             </div>
           )} */}
         </div>
-
       </div>
     </MainLayout>
   );

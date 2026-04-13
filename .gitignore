@@ -24,5 +24,4 @@ dist-ssr
 *.sw?
 
 # MD files
-department_admin.md
-PROJECT_STRUCTURE.md
+documents/

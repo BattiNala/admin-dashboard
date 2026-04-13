@@ -15,16 +15,25 @@ export default function Sidebar({ user, onLogout }) {
 
   const navItems = isSuperAdmin
     ? [
-      // { to: "/superadmin/roles", label: "Roles", Icon: Shield },
-      { to: "/superadmin/departments", label: "Departments", Icon: Building2 },
-      { to: "/superadmin/users", label: "Dept. Admins", Icon: UserCog },
-    ]
+        // { to: "/superadmin/roles", label: "Roles", Icon: Shield },
+        {
+          to: "/superadmin/departments",
+          label: "Departments",
+          Icon: Building2,
+        },
+        { to: "/superadmin/users", label: "Dept. Admins", Icon: UserCog },
+        { to: "/superadmin/employees", label: "Employees", Icon: Users },
+      ]
     : [
-      { to: "/", label: "Dashboard", Icon: AlertTriangle },
-      { to: "/dashboard/teams", label: "Teams", Icon: Building2 },
-      { to: "/dashboard/staff", label: "Department Staff", Icon: UserCog },
-      { to: "/response-analytics", label: "Response Analytics", Icon: BarChart },
-    ];
+        { to: "/", label: "Dashboard", Icon: AlertTriangle },
+        { to: "/dashboard/teams", label: "Teams", Icon: Building2 },
+        { to: "/dashboard/staff", label: "Department Staff", Icon: UserCog },
+        {
+          to: "/response-analytics",
+          label: "Response Analytics",
+          Icon: BarChart,
+        },
+      ];
 
   return (
     <aside className="w-64 bg-white border-r border-gray-200 shrink-0 flex flex-col">
@@ -38,7 +47,9 @@ export default function Sidebar({ user, onLogout }) {
               className="w-full h-full object-contain"
             />
           </div>
-          <span className="text-xl font-bold text-gray-900 group-hover:text-blue-700 transition-colors">BattiNala</span>
+          <span className="text-xl font-bold text-gray-900 group-hover:text-blue-700 transition-colors">
+            BattiNala
+          </span>
         </Link>
 
         {/* Navigation */}
@@ -79,11 +90,13 @@ export default function Sidebar({ user, onLogout }) {
                 {user?.name || user?.username || "Admin User"}
               </p>
               <p className="text-xs text-gray-500">
-                {user?.role === "superadmin" ? "Super Admin" : "Department Admin"}
+                {user?.role === "superadmin"
+                  ? "Super Admin"
+                  : "Department Admin"}
               </p>
               {user?.role === "department_admin" && user?.department_name && (
                 <p
-                  className="text-xs text-gray-400 truncate max-w-[11rem]"
+                  className="text-xs text-gray-400 truncate max-w-44"
                   title={user.department_name}
                 >
                   {user.department_name}
