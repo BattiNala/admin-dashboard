@@ -24,34 +24,30 @@ export default function Header({ user, onMenuClick }) {
             </button>
           )}
           <div className="min-w-0">
-            <h1 className="text-xl font-bold text-gray-900 truncate">
-              Batti Nala
+            <h1 className="text-xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+              {user?.role === "superadmin" 
+                ? "Batti Nala Municipal Portal" 
+                : `${user?.department_name?.charAt(0).toUpperCase() + user?.department_name?.slice(1) || "Department"} Dashboard`}
             </h1>
-            <p className="text-sm text-gray-500 hidden sm:block max-w-2xl">
-              Resolving infrastructure issues from Batti and Nala reported by citizens.
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] leading-none mt-1 sm:block hidden">
+              {user?.role === "superadmin" 
+                ? "Central Governance Hub" 
+                : `${user?.department_name || "Regional"} Department Authority`}
             </p>
           </div>
         </div>
 
-        <div className="text-right shrink-0">
-          {user && roleLabel && (
-            <div className="text-sm text-gray-900 font-medium">
-              {user?.name || user?.username || "Admin"}
+        <div className="flex items-center gap-4">
+          <div className="text-right shrink-0 hidden sm:block">
+            <div className="text-sm font-black text-gray-900 leading-tight">
+              {user?.name || user?.username || "Admin User"}
             </div>
-          )}
-          {user && roleLabel && (
-            <div className="text-xs text-gray-500">{roleLabel}</div>
-          )}
-          {user?.role === "department_admin" && user?.department_name && (
-            <div
-              className="text-xs text-gray-400 max-w-[12rem] truncate ml-auto"
-              title={user.department_name}
-            >
-              {user.department_name}
+            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-tight">
+              {user?.role === "superadmin" ? "Super Admin" : "Dept Administrator"}
             </div>
-          )}
-          <div className="text-xs text-gray-400 mt-0.5 hidden sm:block">
-            {new Date().toLocaleDateString()}
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center font-black text-gray-400 border border-gray-100 uppercase text-xs shadow-sm shadow-blue-50/50">
+             {(user?.name || user?.username || "A").charAt(0)}
           </div>
         </div>
       </div>

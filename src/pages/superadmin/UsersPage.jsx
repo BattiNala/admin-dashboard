@@ -299,10 +299,10 @@ export default function UsersPage({ user, onLogout }) {
                                 {admin.full_name || admin.username}
                               </h3>
                               <div className="flex items-center gap-3">
-                                <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest px-2 py-0.5 bg-blue-50 rounded-md border border-blue-100">
+                                {/* <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest px-2 py-0.5 bg-blue-50 rounded-md border border-blue-100">
                                   {dept?.department_name ||
                                     `Dept ID: ${admin.department_id}`}
-                                </span>
+                                </span> */}
                                 <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">
                                   {admin.email}
                                 </span>
