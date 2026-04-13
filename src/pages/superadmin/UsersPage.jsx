@@ -303,12 +303,16 @@ export default function UsersPage({ user, onLogout }) {
                               {admin.full_name || admin.name || admin.username}
                             </h3>
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                              {admin.employee_id ? `Employee ID: ${admin.employee_id}` : `ID: ${admin.id}`}
+                              {admin.employee_id
+                                ? `Employee ID: ${admin.employee_id}`
+                                : `ID: ${admin.id}`}
                             </p>
                           </div>
                           <div className="flex flex-wrap items-center gap-3">
                             <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest px-3 py-1 bg-blue-50 rounded-lg border border-blue-100">
-                              {dept?.department_name || admin.department_name || "Unknown"}
+                              {dept?.department_name ||
+                                admin.department_name ||
+                                "Unknown"}
                             </span>
                             <span className="text-[10px] font-bold text-gray-500 flex items-center gap-1">
                               <Mail size={12} className="text-gray-300" />{" "}
