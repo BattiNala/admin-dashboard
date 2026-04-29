@@ -1,30 +1,30 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { messageFromFastApiDetail } from "@/utils/apiErrorMessage";
-import { apiClient } from "@/api/client";
+import { listTeams, createTeam } from "@/api/services/teams";
+import { toast } from "sonner";
 
 export const useListTeams = () => {
   return useQuery({
     queryKey: ["teamList"],
     queryFn: async () => {
-      const data = await apiClient.get("/team/list-teams");
-      return Array.isArray(data) ? data : data.teams || [];
+      const data = await listTeams();
+      return data.teams || data.items || data || [];
     },
   });
 };
 
 export const useCreateTeam = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (payload) => {
-      try {
-        return await apiClient.post("/team/create-team", payload);
-      } catch (err) {
-        const parsedError = messageFromFastApiDetail(err.detail) || "Failed to create team";
-        throw new Error(parsedError);
-      }
+      return await createTeam(payload);
     },
     onSuccess: () => {
+      toast.success("Team created successfully.");
       queryClient.invalidateQueries({ queryKey: ["teamList"] });
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to create team.");
     },
   });
 };

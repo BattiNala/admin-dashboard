@@ -36,7 +36,7 @@ export default function AddStaffPage({ user, onLogout }) {
       {
         ...data,
         phone_number: data.phone_number?.trim() || undefined,
-        team_id: data.team_id ? parseInt(data.team_id, 10) : undefined,
+        team_id: data.team_id || 0,
       },
       {
         onSuccess: (result) => {
@@ -73,7 +73,7 @@ export default function AddStaffPage({ user, onLogout }) {
              <UserPlus className="w-8 h-8 text-white" />
            </div> */}
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
-            Register Staff 
+            Register Staff
           </h1>
           <p className="mt-2 text-lg text-gray-500 font-medium">
             Create new response staff for active dispatch across municipal
@@ -164,7 +164,7 @@ export default function AddStaffPage({ user, onLogout }) {
                   <option value="">Select Team</option>
                   {teams.map((team) => (
                     <option key={team.team_id} value={team.team_id}>
-                      {team.team_name} 
+                      {team.team_name}
                     </option>
                   ))}
                 </select>

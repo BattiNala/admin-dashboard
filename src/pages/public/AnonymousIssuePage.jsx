@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { resolveApiUrl } from "@/utils/apiUrl";
 import {
   Camera,
   CheckCircle2,
@@ -9,13 +8,12 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-import { useCamera } from "@/hooks/useCamera";
-import { useGeolocation } from "@/hooks/useGeolocation";
+import { useCamera } from "@/hooks/device/useCamera";
+import { useGeolocation } from "@/hooks/device/useGeolocation";
 import {
-  fetchIssueEndpoint,
-  dataURItoBlob,
-  parseBackendError,
-} from "@/utils/anonymousIssueUtils";
+  createAnonymousIssue,
+  getIssueTypes,
+} from "@/api/services/anonymousIssues";
 import {
   IssueTypeField,
   PriorityField,
@@ -81,16 +79,7 @@ function AnonymousIssuePage() {
       setLoadingTypes(true);
       setTypeError("");
       try {
-        const response = await fetchIssueEndpoint("get-issue-types", {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) {
-          throw new Error(data?.detail || "Failed to load issue types");
-        }
+        const data = await getIssueTypes();
 
         // Extract types and map with index-based IDs
         const types = Array.isArray(data?.types)
@@ -273,22 +262,7 @@ function AnonymousIssuePage() {
         formData.append("photos", file, file.name);
       });
 
-      const response = await fetchIssueEndpoint("anon-create", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json().catch(() => ({}));
-      console.log("Backend response:", data, "Status:", response.status);
-
-      if (!response.ok) {
-        const errorDetail = Array.isArray(data?.detail)
-          ? data.detail
-              .map((err) => `${err.loc?.join(".")}: ${err.msg}`)
-              .join(", ")
-          : data?.detail || data?.message || "Failed to submit issue";
-        throw new Error(errorDetail);
-      }
+      const data = await createAnonymousIssue(formData);
 
       setSuccess(data);
       toast.success("Anonymous report submitted successfully.");

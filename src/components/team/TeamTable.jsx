@@ -3,6 +3,7 @@ import { Loader2, AlertCircle, Users } from "lucide-react";
 import TeamTableRow from "./TeamTableRow";
 
 export default function TeamTable({ data = [], isLoading, isError }) {
+  const teams = Array.isArray(data) ? data : [];
   const tableHeaders = [
     "Team Identity",
     "Department",
@@ -52,7 +53,7 @@ export default function TeamTable({ data = [], isLoading, isError }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-50">
-          {data.length === 0 ? (
+          {teams.length === 0 ? (
             <tr>
               <td colSpan={5} className="px-6 py-24 text-center">
                 <div className="flex flex-col items-center gap-4">
@@ -64,7 +65,7 @@ export default function TeamTable({ data = [], isLoading, isError }) {
               </td>
             </tr>
           ) : (
-            data.map((team) => <TeamTableRow key={team.team_id} team={team} />)
+            teams.map((team) => <TeamTableRow key={team.team_id} team={team} />)
           )}
         </tbody>
       </table>

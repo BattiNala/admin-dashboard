@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { RefreshCw, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import MainLayout from "@/components/layout/MainLayout";
-
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
+import { listTeams } from "@/api/services/teams";
+import { changeStaffTeam } from "@/api/services/staff";
 
 export default function ChangeEmployeeTeam({ user, onLogout }) {
   // In real app you would get employeeId from URL params or from StaffList link
@@ -20,15 +20,8 @@ export default function ChangeEmployeeTeam({ user, onLogout }) {
     const fetchTeams = async () => {
       setLoadingTeams(true);
       try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`${API_BASE}/list-teams`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) throw new Error("Cannot load teams");
-        const data = await res.json();
-        setTeams(data.teams || []);
+        const data = await listTeams();
+        setTeams(data.teams || data.items || data || []);
       } catch (err) {
         setMessage({ type: "error", text: err.message });
       } finally {
@@ -52,25 +45,10 @@ export default function ChangeEmployeeTeam({ user, onLogout }) {
     setMessage({ type: "", text: "" });
 
     try {
-      const token = localStorage.getItem("token");
-
-      // Your backend expects EmployeeTeamChangeRequest { employee_id, new_team_id }
-      const res = await fetch(`${API_BASE}/change-team`, {
-        method: "GET", // ← your current backend uses GET (should be PATCH!)
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        // GET with body is non-standard – your backend probably expects query params
-        // Better: change backend to POST/PATCH and send JSON body
-        // For now we fake it with query string (adjust if your backend reads from query)
-        // Real fix: change endpoint to POST/PATCH in FastAPI
+      await changeStaffTeam({
+        employee_id: Number(employeeId),
+        new_team_id: Number(newTeamId),
       });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || "Failed to change team");
-      }
 
       setMessage({
         type: "success",
@@ -174,13 +152,6 @@ export default function ChangeEmployeeTeam({ user, onLogout }) {
             )}
           </button>
         </form>
-
-        <div className="mt-6 text-sm text-gray-500 bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-          <strong>Note:</strong> Your current backend uses{" "}
-          <code>GET /change-team</code> which is unusual for data modification.
-          Consider changing it to <code>POST</code> or <code>PATCH</code> in the
-          future for better REST practices and to support JSON body properly.
-        </div>
       </div>
     </MainLayout>
   );

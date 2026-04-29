@@ -9,12 +9,12 @@ export default function StaffTableRow({ staff, onChangeTeam }) {
         <div className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors text-base">
           {staff.name}
         </div>
-        <div className="text-[10px] font-black text-gray-300 uppercase tracking-tight">
-          ID: EMP-{staff.employee_id?.toString().padStart(3, "0")}
-        </div>
       </td>
       <td className="px-6 py-6 text-sm">
-        <div className="font-medium text-gray-500 truncate max-w-[180px]" title={staff.email}>
+        <div
+          className="font-medium text-gray-500 truncate max-w-[180px]"
+          title={staff.email}
+        >
           {staff.email}
         </div>
       </td>
@@ -22,7 +22,9 @@ export default function StaffTableRow({ staff, onChangeTeam }) {
         {staff.phone_number || "—"}
       </td>
       <td className="px-6 py-6 text-sm">
-        <span className={`${staff.team_name ? "text-indigo-600 bg-indigo-50 border border-indigo-100/50" : "text-gray-400 bg-gray-50 border border-gray-100"} font-bold uppercase text-[10px] tracking-widest px-3 py-1 rounded-lg`}>
+        <span
+          className={`${staff.team_name ? "text-indigo-600 bg-indigo-50 border border-indigo-100/50" : "text-gray-400 bg-gray-50 border border-gray-100"} font-bold uppercase text-[10px] tracking-widest px-3 py-1 rounded-lg`}
+        >
           {staff.team_name || "Unassigned"}
         </span>
       </td>
@@ -36,7 +38,10 @@ export default function StaffTableRow({ staff, onChangeTeam }) {
           onClick={() => onChangeTeam(staff)}
           className="inline-flex items-center gap-2 px-4 py-2 text-blue-600 hover:text-white hover:bg-blue-600 rounded-xl transition-all border border-blue-50/50 hover:border-blue-600 font-bold text-xs uppercase tracking-widest group"
         >
-          <Edit size={14} className="group-hover:rotate-12 transition-transform" />
+          <Edit
+            size={14}
+            className="group-hover:rotate-12 transition-transform"
+          />
           Assign Team
         </button>
       </td>

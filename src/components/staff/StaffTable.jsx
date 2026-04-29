@@ -2,20 +2,14 @@ import React from "react";
 import { Loader2, AlertCircle } from "lucide-react";
 import StaffTableRow from "./StaffTableRow";
 
-export default function StaffTable({ 
-  data = [], 
-  isLoading, 
-  isError, 
-  onRowAction 
+export default function StaffTable({
+  data = [],
+  isLoading,
+  isError,
+  onRowAction,
 }) {
-  const tableHeaders = [
-    "Name",
-    "Email",
-    "Phone",
-    "Team",
-    "Status",
-    "Actions"
-  ];
+  const staffMembers = Array.isArray(data) ? data : [];
+  const tableHeaders = ["Name", "Email", "Phone", "Team", "Status", "Actions"];
 
   if (isLoading) {
     return (
@@ -30,8 +24,12 @@ export default function StaffTable({
     return (
       <div className="px-6 py-12 text-center bg-red-50/50 rounded-xl m-4 border border-red-100">
         <AlertCircle className="w-10 h-10 mx-auto text-red-500 mb-3" />
-        <h3 className="text-lg font-bold text-red-900 mb-1">Failed to load staff list</h3>
-        <p className="text-red-600 max-w-sm mx-auto">Please check your connection or wait while we retry fetching data.</p>
+        <h3 className="text-lg font-bold text-red-900 mb-1">
+          Failed to load staff list
+        </h3>
+        <p className="text-red-600 max-w-sm mx-auto">
+          Please check your connection or wait while we retry fetching data.
+        </p>
       </div>
     );
   }
@@ -52,14 +50,17 @@ export default function StaffTable({
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
-          {data.length === 0 ? (
+          {staffMembers.length === 0 ? (
             <tr>
-              <td colSpan={6} className="px-6 py-16 text-center text-gray-500 italic">
+              <td
+                colSpan={6}
+                className="px-6 py-16 text-center text-gray-500 italic"
+              >
                 No staff members found matching your current view
               </td>
             </tr>
           ) : (
-            data.map((staff) => (
+            staffMembers.map((staff) => (
               <StaffTableRow
                 key={staff.employee_id}
                 staff={staff}

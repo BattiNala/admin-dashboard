@@ -1,61 +1,63 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiClient } from "@/api/client";
-import { messageFromFastApiDetail } from "@/utils/apiErrorMessage";
+import {
+  createDepartment,
+  deleteDepartment,
+  listDepartmentAdmins,
+  listDepartments,
+  listEmployees,
+} from "@/api/services/departments";
+import { toast } from "sonner";
 
 export const useListDepartments = () => {
   return useQuery({
     queryKey: ["departmentList"],
     queryFn: async () => {
-      const data = await apiClient.get("/department/list-departments");
-      return data.departments || [];
+      const data = await listDepartments();
+      return data.departments || data || [];
     },
   });
 };
 
 export const useCreateDepartment = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (payload) => {
-      try {
-        return await apiClient.post("/department/create-department", payload);
-      } catch (err) {
-        throw new Error(
-          messageFromFastApiDetail(err.detail) || "Failed to create department",
-        );
-      }
+      return await createDepartment(payload);
     },
     onSuccess: () => {
+      toast.success("Department created successfully.");
       queryClient.invalidateQueries({ queryKey: ["departmentList"] });
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to create department.");
     },
   });
 };
 
 export const useDeleteDepartment = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (id) => {
-      try {
-        return await apiClient.delete(`/department/delete-department/${id}`);
-      } catch (err) {
-        throw new Error(
-          messageFromFastApiDetail(err.detail) || "Failed to delete department",
-        );
-      }
+      return await deleteDepartment(id);
     },
     onSuccess: () => {
+      toast.success("Department removed successfully.");
       queryClient.invalidateQueries({ queryKey: ["departmentList"] });
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to delete department.");
     },
   });
 };
+
 export const useListDepartmentAdmins = (departmentId = null) => {
   return useQuery({
-    queryKey: ["departmentAdminList", departmentId],
+    queryKey: ["adminList", departmentId],
     queryFn: async () => {
-      const url = departmentId
-        ? `/department/list-department-admins?department_id=${departmentId}`
-        : "/department/list-department-admins";
-      const data = await apiClient.get(url);
-      return Array.isArray(data) ? data : data.admins || [];
+      const data = await listDepartmentAdmins(departmentId);
+      return data.items || data || [];
     },
   });
 };
@@ -64,8 +66,8 @@ export const useListEmployees = () => {
   return useQuery({
     queryKey: ["employeeList"],
     queryFn: async () => {
-      const data = await apiClient.get("/department/list-employees");
-      return Array.isArray(data) ? data : data.employees || [];
+      const data = await listEmployees();
+      return data.items || data || [];
     },
   });
 };

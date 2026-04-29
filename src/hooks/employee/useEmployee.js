@@ -1,50 +1,52 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { messageFromFastApiDetail } from "@/utils/apiErrorMessage";
-import { apiClient } from "@/api/client";
+import {
+  addStaff,
+  changeStaffTeam,
+  deleteStaff,
+  listStaff,
+} from "@/api/services/staff";
+import { toast } from "sonner";
 
 export const useListStaff = () => {
   return useQuery({
     queryKey: ["staffList"],
     queryFn: async () => {
-      const data = await apiClient.get("/employee/list-staff");
-      return Array.isArray(data) ? data : data.employees || data.staff || [];
+      const data = await listStaff();
+      return data.items || data || [];
     },
   });
 };
 
 export const useAddStaff = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (payload) => {
-      try {
-        return await apiClient.post("/employee/add-staff", {
-          ...payload,
-          team_id: payload.team_id ? parseInt(payload.team_id, 10) : null,
-        });
-      } catch (err) {
-        const parsedError = messageFromFastApiDetail(err.detail) || "Failed to create staff member";
-        throw new Error(parsedError);
-      }
+      return await addStaff(payload);
     },
     onSuccess: () => {
+      toast.success("Staff member added successfully.");
       queryClient.invalidateQueries({ queryKey: ["staffList"] });
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to add staff member.");
     },
   });
 };
 
 export const useChangeTeam = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (payload) => {
-      try {
-        return await apiClient.post("/employee/change-team", payload);
-      } catch (err) {
-        const parsedError = messageFromFastApiDetail(err.detail) || "Failed to update team";
-        throw new Error(parsedError);
-      }
+      return await changeStaffTeam(payload);
     },
     onSuccess: () => {
+      toast.success("Staff team updated successfully.");
       queryClient.invalidateQueries({ queryKey: ["staffList"] });
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to update team.");
     },
   });
 };
@@ -53,12 +55,7 @@ export const useDeleteStaff = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (employeeId) => {
-      try {
-        return await apiClient.delete(`/employee/delete-staff/${employeeId}`);
-      } catch (err) {
-        const parsedError = messageFromFastApiDetail(err.detail) || "Failed to delete staff member";
-        throw new Error(parsedError);
-      }
+      return await deleteStaff(employeeId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["staffList"] });

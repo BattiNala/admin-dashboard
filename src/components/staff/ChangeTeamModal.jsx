@@ -1,13 +1,16 @@
 import React from "react";
 import { Loader2 } from "lucide-react";
 
-export default function ChangeTeamModal({ 
-  selectedEmployee, 
-  newTeamId, 
-  setNewTeamId, 
-  onClose, 
-  onSave, 
-  isSubmitting 
+export default function ChangeTeamModal({
+  selectedEmployee,
+  newTeamId,
+  setNewTeamId,
+  teams = [],
+  isLoadingTeams,
+  isTeamsError,
+  onClose,
+  onSave,
+  isSubmitting,
 }) {
   if (!selectedEmployee) return null;
 
@@ -19,28 +22,55 @@ export default function ChangeTeamModal({
             Change Team Assignment
           </h3>
           <p className="text-sm text-gray-500 leading-relaxed">
-            Assign <strong className="text-blue-600 font-bold">{selectedEmployee.name}</strong> to a different dispatch team for infrastructure reporting response.
+            Assign{" "}
+            <strong className="text-blue-600 font-bold">
+              {selectedEmployee.name}
+            </strong>{" "}
+            to a different dispatch team for infrastructure reporting response.
           </p>
           <div className="mt-4 p-4 bg-blue-50/50 rounded-2xl border border-blue-100/50">
-            <span className="text-[11px] font-bold text-blue-400 uppercase tracking-widest block mb-1">Current Placement</span>
-            <span className="text-lg font-bold text-blue-900">{selectedEmployee.team_name || "Unassigned"}</span>
+            <span className="text-[11px] font-bold text-blue-400 uppercase tracking-widest block mb-1">
+              Current Placement
+            </span>
+            <span className="text-lg font-bold text-blue-900">
+              {selectedEmployee.team_name || "Unassigned"}
+            </span>
           </div>
         </div>
-        
+
         <div className="mb-8">
           <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-            New Team ID Target
+            New Team Assignment
           </label>
-          <input
-            type="number"
-            autoFocus
-            placeholder="Enter Numeric ID (e.g. 101)"
-            value={newTeamId}
-            onChange={(e) => setNewTeamId(e.target.value)}
-            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:bg-white transition-all text-lg font-medium text-gray-900 placeholder:text-gray-300"
-          />
+          <div className="relative">
+            <select
+              autoFocus
+              value={newTeamId}
+              onChange={(e) => setNewTeamId(e.target.value)}
+              disabled={isLoadingTeams || isTeamsError}
+              className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:bg-white transition-all text-lg font-medium text-gray-900 disabled:opacity-60"
+            >
+              <option value="">
+                {isLoadingTeams
+                  ? "Loading teams..."
+                  : isTeamsError
+                    ? "Unable to load teams"
+                    : "Select a team"}
+              </option>
+              {teams.map((team) => (
+                <option key={team.team_id} value={team.team_id}>
+                  {team.team_name}
+                </option>
+              ))}
+            </select>
+            {isLoadingTeams && (
+              <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
+              </div>
+            )}
+          </div>
           <p className="mt-3 text-[11px] text-gray-400 leading-tight italic">
-            * Ensure the Team ID exists for your department before submitting.
+            * Teams are loaded from your department registry.
           </p>
         </div>
 
@@ -52,9 +82,11 @@ export default function ChangeTeamModal({
           >
             Cancel
           </button>
-          <button 
+          <button
             onClick={onSave}
-            disabled={isSubmitting || !newTeamId}
+            disabled={
+              isSubmitting || !newTeamId || isLoadingTeams || isTeamsError
+            }
             className="flex-[1.5] px-6 py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-200 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3 group"
           >
             {isSubmitting ? (

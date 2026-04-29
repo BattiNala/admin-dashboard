@@ -1,4 +1,4 @@
-const AUTH_STORAGE_KEY = "admin-dashboard-auth";
+﻿const AUTH_STORAGE_KEY = "admin-dashboard-auth";
 
 const ACCESS_TTL_MS = 23.5 * 60 * 60 * 1000;
 const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -91,12 +91,8 @@ export const loadAuth = () => {
     const data = JSON.parse(raw);
     const now = Date.now();
 
+    // Check if refresh token is expired
     if (!data?.refresh_expires_at || now > data.refresh_expires_at) {
-      clearAuth();
-      return null;
-    }
-
-    if (!data?.access_expires_at || now > data.access_expires_at) {
       clearAuth();
       return null;
     }
@@ -108,6 +104,7 @@ export const loadAuth = () => {
       return null;
     }
 
+    // Return the data with derived/normalized fields
     return {
       ...data,
       access_token: accessToken,
