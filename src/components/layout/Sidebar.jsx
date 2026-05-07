@@ -90,9 +90,7 @@ export default function Sidebar({ user, onLogout }) {
                 {user?.name || user?.username || "Admin User"}
               </p>
               <p className="text-xs text-gray-500">
-                {user?.role === "superadmin"
-                  ? "Super Admin"
-                  : "Department Admin"}
+                {user?.role === "superadmin" ? "Super Admin" : null}
               </p>
               {user?.role === "department_admin" && user?.department_name && (
                 <p
