@@ -20,7 +20,7 @@ export const listDepartmentAdmins = (departmentId = null) => {
 };
 
 export const listEmployees = () => {
-  return apiClient.get("/department/all-employees");
+  return apiClient.get("/superadmin/all-employees");
 };
 
 export const createDepartmentAdmin = (payload) => {
