@@ -15,3 +15,7 @@ export const listIssues = ({ status, priority, date_from, date_to } = {}) => {
 export const verifyIssueStatus = ({ issue_label, status }) => {
   return apiClient.post("/issues/verify-status", { issue_label, status });
 };
+
+export const rejectIssue = ({ issue_label, reason, status }) => {
+  return apiClient.post("/issues/reject", { issue_label, reason, status });
+};

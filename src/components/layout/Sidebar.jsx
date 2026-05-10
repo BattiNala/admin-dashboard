@@ -30,7 +30,7 @@ export default function Sidebar({ user, onLogout }) {
         { to: "/dashboard/staff", label: "Department Staff", Icon: UserCog },
         {
           to: "/response-analytics",
-          label: "Response Analytics",
+          label: "Reports overview",
           Icon: BarChart,
         },
       ];

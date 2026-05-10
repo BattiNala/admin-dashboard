@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Badge from "@/components/common/Badge";
 import { useListIssues } from "@/hooks/data/useIssues";
 import { useVerifyIssueStatus } from "@/hooks/data/useVerifyIssueStatus";
+import { useRejectIssue } from "@/hooks/data/useRejectIssue";
 import { toast } from "sonner";
 import { Check } from "lucide-react";
 
@@ -9,6 +10,7 @@ export default function IssuesSection() {
   const [currentPage, setCurrentPage] = useState(1);
   const [verifyModal, setVerifyModal] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState("OPEN");
+  const [rejectReason, setRejectReason] = useState("");
   const itemsPerPage = 10;
 
   // Fetch issues with filters
@@ -22,6 +24,10 @@ export default function IssuesSection() {
   // Verify issue status mutation
   const { mutate: verifyStatus, isPending: isVerifying } =
     useVerifyIssueStatus();
+
+  // Reject issue mutation
+  const { mutate: rejectIssue, isPending: isRejecting } = useRejectIssue();
+  const isSubmitting = isVerifying || isRejecting;
 
   // Ensure issuesData is an array
   const issues = Array.isArray(issuesData) ? issuesData : [];
@@ -73,30 +79,60 @@ export default function IssuesSection() {
   const handleVerifyClick = (issue) => {
     setVerifyModal(issue);
     setSelectedStatus("OPEN");
+    setRejectReason("");
   };
 
   const handleVerifySubmit = () => {
-    if (!verifyModal) return;
+    console.log("handleVerifySubmit triggered. selectedStatus:", selectedStatus);
+    if (!verifyModal) {
+      console.log("No verifyModal found, returning.");
+      return;
+    }
 
-    verifyStatus(
-      {
-        issue_label: verifyModal.issue_label,
-        status: selectedStatus,
-      },
-      {
-        onSuccess: () => {
-          toast.success(
-            `Issue ${verifyModal.issue_label} verified as ${selectedStatus}`,
-          );
-          setVerifyModal(null);
-          refetch();
+    if (selectedStatus === "REJECTED") {
+      if (!rejectReason.trim()) {
+        toast.error("Please provide a reason for rejection.");
+        return;
+      }
+      console.log("Calling rejectIssue for label:", verifyModal.issue_label);
+      rejectIssue(
+        {
+          issue_label: verifyModal.issue_label,
+          reason: rejectReason.trim(),
+          status: selectedStatus,
         },
-        onError: (err) => {
-          setVerifyModal(null);
-          toast.error(err.message || "Failed to verify issue status");
+        {
+          onSuccess: () => {
+            console.log("Rejection successful!");
+            setVerifyModal(null);
+            refetch();
+          },
+          onError: (err) => {
+            console.error("Rejection error:", err);
+            toast.error(err.detail || err.message || "Failed to reject issue");
+          },
+        }
+      );
+    } else {
+      console.log("Calling verifyStatus for label:", verifyModal.issue_label);
+      verifyStatus(
+        {
+          issue_label: verifyModal.issue_label,
+          status: selectedStatus,
         },
-      },
-    );
+        {
+          onSuccess: () => {
+            console.log("Verification successful!");
+            setVerifyModal(null);
+            refetch();
+          },
+          onError: (err) => {
+            console.error("Verification error:", err);
+            toast.error(err.detail || err.message || "Failed to verify issue status");
+          },
+        },
+      );
+    }
   };
 
   if (error) {
@@ -309,30 +345,51 @@ export default function IssuesSection() {
                   * Only Open or Rejected are allowed for initial verification.
                 </p>
               </div>
+
+              {selectedStatus === "REJECTED" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Reason for Rejection <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                    placeholder="Provide a clear reason why this issue is invalid or cannot be processed..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 resize-none h-24"
+                    required
+                  ></textarea>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3 justify-end">
               <button
+                type="button"
                 onClick={() => setVerifyModal(null)}
-                disabled={isVerifying}
+                disabled={isSubmitting}
                 className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
+                type="button"
                 onClick={handleVerifySubmit}
-                disabled={isVerifying}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+                disabled={isSubmitting}
+                className={`px-4 py-2 text-white rounded-lg font-medium disabled:opacity-50 flex items-center gap-2 ${
+                  selectedStatus === "REJECTED" 
+                    ? "bg-red-600 hover:bg-red-700" 
+                    : "bg-blue-600 hover:bg-blue-700"
+                }`}
               >
-                {isVerifying ? (
+                {isSubmitting ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Verifying...
+                    {selectedStatus === "REJECTED" ? "Rejecting..." : "Verifying..."}
                   </>
                 ) : (
                   <>
                     <Check size={16} />
-                    Verify
+                    {selectedStatus === "REJECTED" ? "Reject Issue" : "Verify Issue"}
                   </>
                 )}
               </button>

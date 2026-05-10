@@ -14,7 +14,7 @@ export const useVerifyIssueStatus = () => {
       queryClient.invalidateQueries({ queryKey: ["issues"] });
     },
     onError: (err) => {
-      toast.error(err.message || "Failed to verify issue status.");
+      toast.error(err.detail || err.message || "Failed to verify issue status.");
     },
   });
 };
