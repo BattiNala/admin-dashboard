@@ -12,6 +12,10 @@ export const listIssues = ({ status, priority, date_from, date_to } = {}) => {
   return apiClient.get(endpoint);
 };
 
+export const getIssueByLabel = (issue_label) => {
+  return apiClient.get(`/issues/${issue_label}`);
+};
+
 export const verifyIssueStatus = ({ issue_label, status }) => {
   return apiClient.post("/issues/verify-status", { issue_label, status });
 };
