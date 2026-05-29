@@ -67,7 +67,7 @@ function App() {
                   )}
                 </RequireAuth>
               ) : (
-                <Navigate to="/report" replace />
+                <Navigate to="/login" replace />
               )
             }
           />

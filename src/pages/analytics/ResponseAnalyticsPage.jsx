@@ -76,15 +76,18 @@ const shortDate = (isoDate) => {
 };
 
 const ResolutionRateBadge = ({ rate }) => {
-  if (typeof rate !== "number" || Number.isNaN(rate)) return <span className="text-slate-400">—</span>;
+  if (typeof rate !== "number" || Number.isNaN(rate))
+    return <span className="text-slate-400">—</span>;
   const n = rate <= 1 ? Math.round(rate * 100) : Math.round(rate);
   let colorClass = "bg-slate-100 text-slate-700";
   if (n >= 80) colorClass = "bg-green-100 text-green-700 border-green-200";
   else if (n >= 50) colorClass = "bg-amber-100 text-amber-700 border-amber-200";
   else colorClass = "bg-red-100 text-red-700 border-red-200";
-  
+
   return (
-    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${colorClass}`}>
+    <span
+      className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${colorClass}`}
+    >
       {n}%
     </span>
   );
@@ -188,11 +191,13 @@ function buildAnalyticsFromIssuesOnly(issues) {
       fill: CATEGORY_PALETTE[index % CATEGORY_PALETTE.length],
     }));
 
-  const statusDistribution = Object.entries(statusCounts).map(([name, value]) => ({
-    name: name.replace(/_/g, " "),
-    value,
-    fill: STATUS_COLORS[name] || "#94a3b8",
-  }));
+  const statusDistribution = Object.entries(statusCounts).map(
+    ([name, value]) => ({
+      name: name.replace(/_/g, " "),
+      value,
+      fill: STATUS_COLORS[name] || "#94a3b8",
+    }),
+  );
 
   return {
     resolvedCount,
@@ -259,19 +264,14 @@ export default function ResponseAnalyticsPage({ user, onLogout }) {
   const topEmployeesFiltered = useMemo(() => {
     return [...employeeRows]
       .filter((r) => (r.total_assigned ?? 0) > 0)
-      .sort(
-        (a, b) => (b.resolution_rate ?? 0) - (a.resolution_rate ?? 0),
-      )
+      .sort((a, b) => (b.resolution_rate ?? 0) - (a.resolution_rate ?? 0))
       .slice(0, 10);
   }, [employeeRows]);
 
   /** Your teams ranked by how many reports they are carrying (department data only). */
   const topTeamsFiltered = useMemo(() => {
     return [...teamRows]
-      .sort(
-        (a, b) =>
-          (b.assigned_issues ?? 0) - (a.assigned_issues ?? 0),
-      )
+      .sort((a, b) => (b.assigned_issues ?? 0) - (a.assigned_issues ?? 0))
       .slice(0, 10);
   }, [teamRows]);
 
@@ -300,8 +300,7 @@ export default function ResponseAnalyticsPage({ user, onLogout }) {
       typeof stats.pending_verification_issues === "number"
         ? stats.pending_verification_issues
         : 0;
-    const open =
-      typeof stats.open_issues === "number" ? stats.open_issues : 0;
+    const open = typeof stats.open_issues === "number" ? stats.open_issues : 0;
     const inProgress =
       typeof stats.in_progress_issues === "number"
         ? stats.in_progress_issues
@@ -323,7 +322,8 @@ export default function ResponseAnalyticsPage({ user, onLogout }) {
           fill: CATEGORY_PALETTE[index % CATEGORY_PALETTE.length],
         }));
     } else {
-      categoryBreakdown = buildAnalyticsFromIssuesOnly(issues).categoryBreakdown;
+      categoryBreakdown =
+        buildAnalyticsFromIssuesOnly(issues).categoryBreakdown;
     }
 
     let statusDistribution = [];
@@ -399,8 +399,6 @@ export default function ResponseAnalyticsPage({ user, onLogout }) {
                 </p>
               </div>
 
-
-
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
                 <div className="h-1.5 w-12 rounded-full bg-amber-500" />
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400 mt-4">
@@ -410,8 +408,8 @@ export default function ResponseAnalyticsPage({ user, onLogout }) {
                   {analytics.pendingCount}
                 </p>
                 <p className="text-xs text-slate-500 mt-2">
-                  {analytics.openCount + analytics.inProgressCount} reports still
-                  open or being worked on
+                  {analytics.openCount + analytics.inProgressCount} reports
+                  still open or being worked on
                 </p>
               </div>
 
@@ -428,7 +426,7 @@ export default function ResponseAnalyticsPage({ user, onLogout }) {
                 </p>
               </div>
 
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+              {/* <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
                 <div className="h-1.5 w-12 rounded-full bg-indigo-500" />
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400 mt-4">
                   All reports counted
@@ -439,7 +437,7 @@ export default function ResponseAnalyticsPage({ user, onLogout }) {
                 <p className="text-xs text-slate-500 mt-2">
                   Count for this department alone
                 </p>
-              </div>
+              </div> */}
 
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
                 <div className="h-1.5 w-12 rounded-full bg-rose-400" />
@@ -455,7 +453,7 @@ export default function ResponseAnalyticsPage({ user, onLogout }) {
               </div>
             </div>
 
-            {deptEnabled && employeesPayload && (
+            {/* {deptEnabled && employeesPayload && (
               <div className="bg-white rounded-2xl border border-slate-200 px-6 py-4 flex flex-wrap items-baseline gap-x-6 gap-y-2">
                 <span className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
                   Your people
@@ -468,10 +466,12 @@ export default function ResponseAnalyticsPage({ user, onLogout }) {
                 </span>
                 <span className="text-sm text-slate-600 flex items-center gap-2">
                   Typical share of assigned work closed:
-                  <ResolutionRateBadge rate={employeesPayload.avg_resolution_rate} />
+                  <ResolutionRateBadge
+                    rate={employeesPayload.avg_resolution_rate}
+                  />
                 </span>
               </div>
-            )}
+            )} */}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
               <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
@@ -550,8 +550,8 @@ export default function ResponseAnalyticsPage({ user, onLogout }) {
                       New reports over time
                     </h3>
                     <p className="text-xs text-slate-500 mt-1 max-w-md">
-                      Each day: how many new reports came in. Useful for spotting
-                      busy weeks.
+                      Each day: how many new reports came in. Useful for
+                      spotting busy weeks.
                     </p>
                   </div>
                   <span className="text-xs text-slate-500 shrink-0 text-right max-w-[8rem]">
@@ -570,9 +570,23 @@ export default function ResponseAnalyticsPage({ user, onLogout }) {
                         margin={{ top: 10, right: 20, left: 0, bottom: 60 }}
                       >
                         <defs>
-                          <linearGradient id="trendBlue" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#2563eb" stopOpacity={0.35} />
-                            <stop offset="100%" stopColor="#2563eb" stopOpacity={0} />
+                          <linearGradient
+                            id="trendBlue"
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="0%"
+                              stopColor="#2563eb"
+                              stopOpacity={0.35}
+                            />
+                            <stop
+                              offset="100%"
+                              stopColor="#2563eb"
+                              stopOpacity={0}
+                            />
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
@@ -718,38 +732,52 @@ export default function ResponseAnalyticsPage({ user, onLogout }) {
                     Who has what work
                   </h3>
                   <p className="text-xs text-slate-500 mt-1 max-w-xl">
-                    Each person’s assignments, closures, and work still in progress.
+                    Each person’s assignments, closures, and work still in
+                    progress.
                   </p>
                 </div>
                 <div className="p-6">
                   <div className="max-h-[360px] overflow-y-auto pr-2">
                     <div className="flex flex-col gap-3 pb-2">
                       {!deptEnabled || employeeRows.length === 0 ? (
-                      <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
-                        <p className="text-sm text-slate-500">
-                          {deptEnabled
-                            ? "No staff records to show for your department."
-                            : "Sign in as a department admin with a linked department to see this data."}
-                        </p>
-                      </div>
-                    ) : (
-                      employeeRows.map((row) => (
-                        <div key={row.employee_id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-slate-100 bg-white hover:border-blue-100 hover:shadow-sm transition-all group">
-                          <div className="mb-3 sm:mb-0">
-                            <h4 className="font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">{row.name}</h4>
-                            <div className="flex flex-wrap items-center gap-2 mt-1.5 text-xs text-slate-500">
-                              <span className="bg-slate-100 px-2 py-0.5 rounded-md text-slate-600 font-medium">{row.total_assigned ?? 0} Assigned</span>
-                              <span className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-md font-medium">{row.resolved_count ?? 0} Closed</span>
-                              <span className="bg-amber-50 text-amber-600 px-2 py-0.5 rounded-md font-medium">{row.in_progress_count ?? 0} In Progress</span>
+                        <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
+                          <p className="text-sm text-slate-500">
+                            {deptEnabled
+                              ? "No staff records to show for your department."
+                              : "Sign in as a department admin with a linked department to see this data."}
+                          </p>
+                        </div>
+                      ) : (
+                        employeeRows.map((row) => (
+                          <div
+                            key={row.employee_id}
+                            className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-slate-100 bg-white hover:border-blue-100 hover:shadow-sm transition-all group"
+                          >
+                            <div className="mb-3 sm:mb-0">
+                              <h4 className="font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
+                                {row.name}
+                              </h4>
+                              <div className="flex flex-wrap items-center gap-2 mt-1.5 text-xs text-slate-500">
+                                <span className="bg-slate-100 px-2 py-0.5 rounded-md text-slate-600 font-medium">
+                                  {row.total_assigned ?? 0} Assigned
+                                </span>
+                                <span className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-md font-medium">
+                                  {row.resolved_count ?? 0} Closed
+                                </span>
+                                <span className="bg-amber-50 text-amber-600 px-2 py-0.5 rounded-md font-medium">
+                                  {row.in_progress_count ?? 0} In Progress
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between sm:justify-end gap-4 min-w-[140px]">
+                              <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">
+                                Completion
+                              </span>
+                              <ResolutionRateBadge rate={row.resolution_rate} />
                             </div>
                           </div>
-                          <div className="flex items-center justify-between sm:justify-end gap-4 min-w-[140px]">
-                            <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Completion</span>
-                            <ResolutionRateBadge rate={row.resolution_rate} />
-                          </div>
-                        </div>
-                      ))
-                    )}
+                        ))
+                      )}
                     </div>
                   </div>
                 </div>
@@ -764,64 +792,78 @@ export default function ResponseAnalyticsPage({ user, onLogout }) {
                     Teams at a glance
                   </h3>
                   <p className="text-xs text-slate-500 mt-1 max-w-xl">
-                    Team size, who is free or busy, and how many reports sit with
-                    each team.
+                    Team size, who is free or busy, and how many reports sit
+                    with each team.
                   </p>
                 </div>
                 <div className="p-6">
                   <div className="max-h-[360px] overflow-y-auto pr-2">
                     <div className="flex flex-col gap-6 pb-2">
                       {!deptEnabled || teamRows.length === 0 ? (
-                      <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
-                        <p className="text-sm text-slate-500">
-                          {deptEnabled
-                            ? "No teams listed for your department yet."
-                            : "Sign in as a department admin with a linked department to see this data."}
-                        </p>
-                      </div>
-                    ) : (
-                      teamRows.map((row) => {
-                        const total = row.total_members || 1;
-                        const busy = row.busy_members || 0;
-                        const available = row.available_members || 0;
-                        const busyPct = Math.round((busy / total) * 100);
-                        const availPct = Math.round((available / total) * 100);
+                        <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
+                          <p className="text-sm text-slate-500">
+                            {deptEnabled
+                              ? "No teams listed for your department yet."
+                              : "Sign in as a department admin with a linked department to see this data."}
+                          </p>
+                        </div>
+                      ) : (
+                        teamRows.map((row) => {
+                          const total = row.total_members || 1;
+                          const busy = row.busy_members || 0;
+                          const available = row.available_members || 0;
+                          const busyPct = Math.round((busy / total) * 100);
+                          const availPct = Math.round(
+                            (available / total) * 100,
+                          );
 
-                        let workloadColor = "bg-green-500";
-                        if (busyPct > 80) workloadColor = "bg-red-500";
-                        else if (busyPct > 50) workloadColor = "bg-amber-500";
+                          let workloadColor = "bg-green-500";
+                          if (busyPct > 80) workloadColor = "bg-red-500";
+                          else if (busyPct > 50) workloadColor = "bg-amber-500";
 
-                        return (
-                          <div key={row.team_id} className="group">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
-                                {row.team_name}
-                              </span>
-                              <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">
-                                {row.assigned_issues} open reports
-                              </span>
+                          return (
+                            <div key={row.team_id} className="group">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
+                                  {row.team_name}
+                                </span>
+                                <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">
+                                  {row.assigned_issues} open reports
+                                </span>
+                              </div>
+                              <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden flex">
+                                <div
+                                  className={`h-full ${workloadColor} transition-all duration-500`}
+                                  style={{ width: `${busyPct}%` }}
+                                  title={`${busy} busy`}
+                                ></div>
+                                <div
+                                  className="h-full bg-slate-200 transition-all duration-500"
+                                  style={{ width: `${availPct}%` }}
+                                  title={`${available} available`}
+                                ></div>
+                              </div>
+                              <div className="flex justify-between text-[11px] font-medium text-slate-500 mt-2 uppercase tracking-wider">
+                                <span
+                                  className={
+                                    busyPct > 50 ? "text-slate-700" : ""
+                                  }
+                                >
+                                  {busy} Busy
+                                </span>
+                                <span>{total} Total Members</span>
+                                <span
+                                  className={
+                                    availPct > 50 ? "text-green-600" : ""
+                                  }
+                                >
+                                  {available} Available
+                                </span>
+                              </div>
                             </div>
-                            <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden flex">
-                              <div
-                                className={`h-full ${workloadColor} transition-all duration-500`}
-                                style={{ width: `${busyPct}%` }}
-                                title={`${busy} busy`}
-                              ></div>
-                              <div
-                                className="h-full bg-slate-200 transition-all duration-500"
-                                style={{ width: `${availPct}%` }}
-                                title={`${available} available`}
-                              ></div>
-                            </div>
-                            <div className="flex justify-between text-[11px] font-medium text-slate-500 mt-2 uppercase tracking-wider">
-                              <span className={busyPct > 50 ? "text-slate-700" : ""}>{busy} Busy</span>
-                              <span>{total} Total Members</span>
-                              <span className={availPct > 50 ? "text-green-600" : ""}>{available} Available</span>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
+                          );
+                        })
+                      )}
                     </div>
                   </div>
                 </div>
@@ -836,85 +878,90 @@ export default function ResponseAnalyticsPage({ user, onLogout }) {
                     Standout staff
                   </h3>
                   <p className="text-xs text-slate-500 mt-1 max-w-xl">
-                    The same department roster as the table above, sorted by who closes the
-                    largest share of their assigned work (among people who have assignments).
+                    The same department roster as the table above, sorted by who
+                    closes the largest share of their assigned work (among
+                    people who have assignments).
                   </p>
                 </div>
                 <div className="p-6">
                   <div className="max-h-[360px] overflow-y-auto pr-2">
                     <div className="flex flex-col gap-6 pb-2">
                       {topEmployeesFiltered.length === 0 ? (
-                      <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
-                        <p className="text-sm text-slate-500">
-                          No one matches this view yet.
-                        </p>
-                      </div>
-                    ) : (
-                      topEmployeesFiltered.map((row, idx) => {
-                        let badge = null;
-                        let borderClass = "border-slate-100";
-                        let bgClass = "bg-white";
+                        <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
+                          <p className="text-sm text-slate-500">
+                            No one matches this view yet.
+                          </p>
+                        </div>
+                      ) : (
+                        topEmployeesFiltered.map((row, idx) => {
+                          let badge = null;
+                          let borderClass = "border-slate-100";
+                          let bgClass = "bg-white";
 
-                        if (idx === 0) {
-                          badge = "🥇";
-                          borderClass = "border-yellow-300";
-                          bgClass = "bg-gradient-to-r from-yellow-50 to-white";
-                        } else if (idx === 1) {
-                          badge = "🥈";
-                          borderClass = "border-slate-300";
-                          bgClass = "bg-gradient-to-r from-slate-50 to-white";
-                        } else if (idx === 2) {
-                          badge = "🥉";
-                          borderClass = "border-amber-600/30";
-                          bgClass = "bg-gradient-to-r from-amber-50/50 to-white";
-                        }
+                          if (idx === 0) {
+                            badge = "🥇";
+                            borderClass = "border-yellow-300";
+                            bgClass =
+                              "bg-gradient-to-r from-yellow-50 to-white";
+                          } else if (idx === 1) {
+                            badge = "🥈";
+                            borderClass = "border-slate-300";
+                            bgClass = "bg-gradient-to-r from-slate-50 to-white";
+                          } else if (idx === 2) {
+                            badge = "🥉";
+                            borderClass = "border-amber-600/30";
+                            bgClass =
+                              "bg-gradient-to-r from-amber-50/50 to-white";
+                          }
 
-                        const n =
-                          row.resolution_rate <= 1
-                            ? Math.round(row.resolution_rate * 100)
-                            : Math.round(row.resolution_rate);
+                          const n =
+                            row.resolution_rate <= 1
+                              ? Math.round(row.resolution_rate * 100)
+                              : Math.round(row.resolution_rate);
 
-                        return (
-                          <div
-                            key={row.employee_id}
-                            className={`flex items-center justify-between p-5 rounded-xl border ${borderClass} ${bgClass} shadow-sm transition-all hover:shadow-md`}
-                          >
-                            <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-xl shadow-inner shrink-0">
-                                {badge || (
-                                  <span className="text-sm font-semibold text-slate-500">
-                                    #{idx + 1}
-                                  </span>
-                                )}
+                          return (
+                            <div
+                              key={row.employee_id}
+                              className={`flex items-center justify-between p-5 rounded-xl border ${borderClass} ${bgClass} shadow-sm transition-all hover:shadow-md`}
+                            >
+                              <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-xl shadow-inner shrink-0">
+                                  {badge || (
+                                    <span className="text-sm font-semibold text-slate-500">
+                                      #{idx + 1}
+                                    </span>
+                                  )}
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold text-slate-900">
+                                    {row.name}
+                                  </h4>
+                                  <p className="text-xs text-slate-500">
+                                    {row.resolved_count} closed issues
+                                  </p>
+                                </div>
                               </div>
-                              <div>
-                                <h4 className="font-semibold text-slate-900">
-                                  {row.name}
-                                </h4>
-                                <p className="text-xs text-slate-500">
-                                  {row.resolved_count} closed issues
-                                </p>
+                              <div className="text-right">
+                                <ResolutionRateBadge
+                                  rate={row.resolution_rate}
+                                />
+                                <div className="w-24 h-1.5 bg-slate-100 rounded-full mt-2 overflow-hidden ml-auto">
+                                  <div
+                                    className={`h-full ${
+                                      n >= 80
+                                        ? "bg-green-500"
+                                        : n >= 50
+                                          ? "bg-amber-500"
+                                          : "bg-red-500"
+                                    }`}
+                                    style={{ width: `${n}%` }}
+                                  ></div>
+                                </div>
                               </div>
                             </div>
-                            <div className="text-right">
-                              <ResolutionRateBadge rate={row.resolution_rate} />
-                              <div className="w-24 h-1.5 bg-slate-100 rounded-full mt-2 overflow-hidden ml-auto">
-                                <div
-                                  className={`h-full ${
-                                    n >= 80
-                                      ? "bg-green-500"
-                                      : n >= 50
-                                      ? "bg-amber-500"
-                                      : "bg-red-500"
-                                  }`}
-                                  style={{ width: `${n}%` }}
-                                ></div>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
+                          );
+                        })
+                      )}
                     </div>
                   </div>
                 </div>
@@ -929,45 +976,70 @@ export default function ResponseAnalyticsPage({ user, onLogout }) {
                     Teams carrying the most work
                   </h3>
                   <p className="text-xs text-slate-500 mt-1 max-w-xl">
-                    Your teams ranked by open reports assigned to them. Only your department’s teams are listed.
+                    Your teams ranked by open reports assigned to them. Only
+                    your department’s teams are listed.
                   </p>
                 </div>
                 <div className="p-6">
                   <div className="max-h-[360px] overflow-y-auto pr-2">
                     <div className="flex flex-col gap-6 pb-2">
                       {topTeamsFiltered.length === 0 ? (
-                      <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
-                        <p className="text-sm text-slate-500">
-                          No teams listed for your department yet.
-                        </p>
-                      </div>
-                    ) : (
-                      topTeamsFiltered.map((row, idx) => {
-                        const maxReports = Math.max(...topTeamsFiltered.map(t => t.assigned_issues || 0), 1);
-                        const pct = Math.round(((row.assigned_issues || 0) / maxReports) * 100);
-                        
-                        return (
-                          <div key={row.team_id} className="relative p-5 rounded-xl border border-slate-100 bg-white hover:border-red-100 hover:shadow-sm transition-all group overflow-hidden z-0">
-                            <div className="absolute top-0 left-0 h-full bg-red-50/50 -z-10 transition-all duration-700" style={{ width: `${pct}%` }}></div>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-4">
-                                <div className="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold text-sm shrink-0">
-                                  #{idx + 1}
+                        <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
+                          <p className="text-sm text-slate-500">
+                            No teams listed for your department yet.
+                          </p>
+                        </div>
+                      ) : (
+                        topTeamsFiltered.map((row, idx) => {
+                          const maxReports = Math.max(
+                            ...topTeamsFiltered.map(
+                              (t) => t.assigned_issues || 0,
+                            ),
+                            1,
+                          );
+                          const pct = Math.round(
+                            ((row.assigned_issues || 0) / maxReports) * 100,
+                          );
+
+                          return (
+                            <div
+                              key={row.team_id}
+                              className="relative p-5 rounded-xl border border-slate-100 bg-white hover:border-red-100 hover:shadow-sm transition-all group overflow-hidden z-0"
+                            >
+                              <div
+                                className="absolute top-0 left-0 h-full bg-red-50/50 -z-10 transition-all duration-700"
+                                style={{ width: `${pct}%` }}
+                              ></div>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold text-sm shrink-0">
+                                    #{idx + 1}
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold text-slate-900 group-hover:text-red-700 transition-colors">
+                                      {row.team_name}
+                                    </h4>
+                                    <p className="text-xs text-slate-500 mt-0.5">
+                                      {row.total_members} Members •{" "}
+                                      <span className="font-medium text-slate-700">
+                                        {row.available_members} Available
+                                      </span>
+                                    </p>
+                                  </div>
                                 </div>
-                                <div>
-                                  <h4 className="font-semibold text-slate-900 group-hover:text-red-700 transition-colors">{row.team_name}</h4>
-                                  <p className="text-xs text-slate-500 mt-0.5">{row.total_members} Members • <span className="font-medium text-slate-700">{row.available_members} Available</span></p>
+                                <div className="text-right">
+                                  <div className="text-xl font-bold text-red-600">
+                                    {row.assigned_issues || 0}
+                                  </div>
+                                  <p className="text-[10px] font-bold uppercase tracking-wider text-red-400 mt-0.5">
+                                    Open Reports
+                                  </p>
                                 </div>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-xl font-bold text-red-600">{row.assigned_issues || 0}</div>
-                                <p className="text-[10px] font-bold uppercase tracking-wider text-red-400 mt-0.5">Open Reports</p>
                               </div>
                             </div>
-                          </div>
-                        );
-                      })
-                    )}
+                          );
+                        })
+                      )}
                     </div>
                   </div>
                 </div>
